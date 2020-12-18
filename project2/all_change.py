@@ -49,13 +49,23 @@ def all_change(cur: Currency, r: float):
             # total count
             T[i][j][0] = x + y
 
+    # reconvert result in initial value
+    for i in range(len(T[-1][-1][1])):
+        sol = T[-1][-1][1][i]
+        for j in range(len(sol)):
+            sol[j] = _int2float(sol[j])
+
     return T[-1][-1]
 
 
 if __name__ == '__main__':
     c = Currency('EUR')
-    c.add_denomination(0.01)
-    c.add_denomination(0.02)
+    # c.add_denomination(0.01)
+    # c.add_denomination(0.02)
     c.add_denomination(0.05)
+    c.add_denomination(0.1)
+    c.add_denomination(0.2)
+    c.add_denomination(0.5)
+    c.add_denomination(1)
 
-    print(all_change(c, 0.08))
+    print(all_change(c, 2))
