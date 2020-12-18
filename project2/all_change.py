@@ -65,8 +65,7 @@ def all_change_number_only(cur: Currency, r: float):
 
     :param cur: the currency to use to get the change;
     :param r: the value to return the change;
-    :returns: the number of different ways that value r can be achieved by using denominations of the given currency;
-    :returns: the list of different changes of the value r that can be achieved by using denominations."""
+    :return: the number of different ways that value r can be achieved by using denominations of the given currency;"""
 
     # introducing convenient notation working in cents
     m = cur.num_denominations()
@@ -106,5 +105,5 @@ if __name__ == '__main__':
     c.add_denomination(1)
     c.add_denomination(2)
 
-    print(all_change_num(c, 30))
+    print(all_change_number_only(c, 30))
     # print(all_change(c, 2))
