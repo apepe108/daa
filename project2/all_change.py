@@ -44,16 +44,16 @@ def all_change(cur: Currency, r: float):
             # total count
             T[i][j] = x + y
 
-    #for row in table:
-    #    print(row)
+    for row in T:
+        print(row)
 
     return T[n][m - 1]
 
 
 if __name__ == '__main__':
     c = Currency('EUR')
+    c.add_denomination(0.01)
+    c.add_denomination(0.02)
     c.add_denomination(0.05)
-    c.add_denomination(0.1)
-    c.add_denomination(0.2)
 
-    print(all_change(c, 0.30))
+    print(all_change(c, 0.08))
