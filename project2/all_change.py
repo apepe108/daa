@@ -26,23 +26,23 @@ def all_change(cur: Currency, r: float):
     n = _float2int(r)
 
     # Construct table
-    T = [[0 for _ in range(m)] for _ in range(n + 1)]
+    T = [[[0, []] for _ in range(m)] for _ in range(n + 1)]
 
     # Fill the entries for 0 value case (n = 0)
     for i in range(m):
-        T[0][i] = 1
+        T[0][i][0] = 1
 
     # Fill rest of the table entries in bottom up manner
     for i in range(1, n + 1):
         for j in range(m):
             # Count of solutions including S[j]
-            x = T[i - S[j]][j] if i - S[j] >= 0 else 0
+            x = T[i - S[j]][j][0] if i - S[j] >= 0 else 0
 
             # Count of solutions excluding S[j]
-            y = T[i][j - 1] if j >= 1 else 0
+            y = T[i][j - 1][0] if j >= 1 else 0
 
             # total count
-            T[i][j] = x + y
+            T[i][j][0] = x + y
 
     for row in T:
         print(row)
