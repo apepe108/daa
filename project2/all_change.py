@@ -183,7 +183,7 @@ if __name__ == '__main__':
 
     original_stdout = sys.stdout  # Save a reference to the original standard output
 
-    with open('filename.txt', 'w') as f:
+    with open('result_es2.txt', 'w') as f:
         sys.stdout = f  # Change the standard output to the file we created.
 
         # print('value {} -> {}'.format(value, all_change_number_only(c, value)))
