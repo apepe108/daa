@@ -38,8 +38,7 @@ def all_change(cur: Currency, r: float):
             # Count of solutions including S[j]
             x = T[i - S[j]][j][0] if i - S[j] >= 0 else 0
             if x > 0:
-                for sol in T[i - S[j]][j][1]:
-                    T[i][j][1].append(sol[:] + [S[j]])
+                T[i][j][1] += [sol[:] + [S[j]] for sol in T[i - S[j]][j][1]]
 
             # Count of solutions excluding S[j]
             y = T[i][j - 1][0] if j >= 1 else 0
@@ -67,5 +66,6 @@ if __name__ == '__main__':
     c.add_denomination(0.2)
     c.add_denomination(0.5)
     c.add_denomination(1)
+    c.add_denomination(2)
 
-    print(all_change(c, 2))
+    print(all_change(c, 0.3))
