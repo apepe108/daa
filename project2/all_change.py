@@ -30,24 +30,26 @@ def all_change(cur: Currency, r: float):
 
     # Fill the entries for 0 value case (n = 0)
     for i in range(m):
-        T[0][i][0] = 1
+        T[0][i] = [1, [[]]]
 
     # Fill rest of the table entries in bottom up manner
     for i in range(1, n + 1):
         for j in range(m):
             # Count of solutions including S[j]
             x = T[i - S[j]][j][0] if i - S[j] >= 0 else 0
+            if x > 0:
+                for sol in T[i - S[j]][j][1]:
+                    T[i][j][1].append(sol[:] + [S[j]])
 
             # Count of solutions excluding S[j]
             y = T[i][j - 1][0] if j >= 1 else 0
+            if y > 0:
+                T[i][j][1] += [sol for sol in T[i][j - 1][1]]
 
             # total count
             T[i][j][0] = x + y
 
-    for row in T:
-        print(row)
-
-    return T[n][m - 1]
+    return T[-1][-1]
 
 
 if __name__ == '__main__':
