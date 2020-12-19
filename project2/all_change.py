@@ -51,7 +51,7 @@ def all_change_number_only(cur: Currency, r: float):
     return T[-1][-1]
 
 
-def all_change(cur: Currency, r: float):
+def all_change(cur: Currency, r: float, max_permutation=1000):
     """This function, given in input a Currency Object and a float number r with at most two decimal points, returns all
     possible way to change r value with the currency c.
     (E.g., for a currency whose denominations are {0.1, 0.2, 0.5} and r=0.6, the algorithm must return 5, and the five
@@ -59,6 +59,7 @@ def all_change(cur: Currency, r: float):
 
     :param cur: the currency to use to get the change;
     :param r: the value to return the change;
+    :param max_permutation: the number of max list of different changes to return;
     :returns: the number of different ways that value r can be achieved by using denominations of the given currency;
     :returns: the list of different changes of the value r that can be achieved by using denominations."""
 
@@ -83,13 +84,27 @@ def all_change(cur: Currency, r: float):
         for j in range(m):
             # Count of solutions including S[j]
             x = T[i - S[j]][j][0] if i - S[j] >= 0 else 0
+
+            # get max_permutation permutation value
             if x > 0:
-                T[i][j][1] += [sol[:] + [S[j]] for sol in T[i - S[j]][j][1]]
+                range_start = 0
+                range_end = min(len(T[i - S[j]][j][1]), max_permutation)
+                while len(T[i - S[j]][j][1]) < max_permutation and range_start < range_end:
+                    sol = T[i - S[j]][j][1][range_start]
+                    T[i][j][1].append(sol[:] + [S[j]])
+                    range_start += 1
 
             # Count of solutions excluding S[j]
             y = T[i][j - 1][0] if j >= 1 else 0
+
+            # get max_permutation permutation value
             if y > 0:
-                T[i][j][1] += [sol for sol in T[i][j - 1][1]]
+                range_start = 0
+                range_end = min(len(T[i][j - 1][1]), max_permutation)
+                while len(T[i][j - 1][1]) < max_permutation and range_start < range_end:
+                    sol = T[i][j - 1][1][range_start]
+                    T[i][j][1].append(sol[:])
+                    range_start += 1
 
             # total count
             T[i][j][0] = x + y
@@ -203,8 +218,8 @@ def all_change_bottom_up(cur: Currency, r: float, max_permutation=1000):
 
 if __name__ == '__main__':
     c = Currency('EUR')
-    # c.add_denomination(0.01)
-    # c.add_denomination(0.02)
+    c.add_denomination(0.01)
+    c.add_denomination(0.02)
     c.add_denomination(0.05)
     c.add_denomination(0.1)
     c.add_denomination(0.2)
@@ -216,16 +231,16 @@ if __name__ == '__main__':
     c.add_denomination(20)
     c.add_denomination(50)
 
-    value = 24.05
+    value = 2.01
 
     original_stdout = sys.stdout  # Save a reference to the original standard output
 
     with open('result_es2.txt', 'w') as f:
         sys.stdout = f  # Change the standard output to the file we created.
 
-        print('value {} -> {}'.format(value, all_change_number_only(c, value)))
-        print('value {} -> {}'.format(value, all_change_number_only_bottom_up(c, value)))
-        print('value {} -> {}'.format(value, all_change_bottom_up(c, value)))
-        # print(all_change(c, 2))
+        # print('\n\nvalue {} -> {}'.format(value, all_change(c, value)))
+        # print('\n\nvalue {} -> {}'.format(value, all_change_number_only(c, value)))
+        # print('\n\nvalue {} -> {}'.format(value, all_change_number_only_bottom_up(c, value)))
+        print('\n\nvalue {} -> {}'.format(value, all_change_bottom_up(c, value)))
 
         sys.stdout = original_stdout  # Reset the standard output to its original value
