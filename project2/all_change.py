@@ -141,7 +141,10 @@ def all_change_bottom_up(cur: Currency, r: float):
 
     # introducing convenient notation working in cents
     m = cur.num_denominations()
-    S = [_float2int(x) for x in cur.iter_denominations()]
+    # use reverse getting some in between shortest sequence for canonical currency (all active currency are canonical)
+    # PLEASE NOTE: the shortest sequences are not always returned, for that there is the change function in the project1
+    # package, but you avoid returning sequences formed by minimum currency to make them more understandable.
+    S = [_float2int(x) for x in cur.iter_denominations(reverse=True)]
     n = _float2int(r)
 
     # Construct table
@@ -155,11 +158,18 @@ def all_change_bottom_up(cur: Currency, r: float):
     # picked coin
     for i in range(0, m):
         for j in range(S[i], n + 1):
+            # Get permutation number
             T[j][0] += T[j - S[i]][0]
-            if i <= PERMUTATION_MAX_LEN:
-                T[j][1] += [sol[:] + [S[i]] for sol in T[j - S[i]][1]]
 
-    # reconvert result in initial value
+            # get max PERMUTATION_MAX_LEN permutation value
+            range_start = 0
+            range_end = min(len(T[j - S[i]][1]), 1000)
+            while len(T[j][1]) < PERMUTATION_MAX_LEN and range_start < range_end:
+                sol = T[j - S[i]][1][range_start]
+                T[j][1].append(sol[:] + [S[i]])
+                range_start += 1
+
+    # reconvert result in float value
     for i in range(len(T[n][1])):
         sol = T[n][1][i]
         for j in range(len(sol)):
@@ -178,16 +188,20 @@ if __name__ == '__main__':
     c.add_denomination(0.5)
     c.add_denomination(1)
     c.add_denomination(2)
+    c.add_denomination(5)
+    c.add_denomination(10)
+    c.add_denomination(20)
+    c.add_denomination(50)
 
-    value = 2
+    value = 55.5
 
     original_stdout = sys.stdout  # Save a reference to the original standard output
 
     with open('result_es2.txt', 'w') as f:
         sys.stdout = f  # Change the standard output to the file we created.
 
-        # print('value {} -> {}'.format(value, all_change_number_only(c, value)))
-        # print('value {} -> {}'.format(value, all_change_number_only_bottom_up(c, value)))
+        print('value {} -> {}'.format(value, all_change_number_only(c, value)))
+        print('value {} -> {}'.format(value, all_change_number_only_bottom_up(c, value)))
         print('value {} -> {}'.format(value, all_change_bottom_up(c, value)))
         # print(all_change(c, 2))
 
