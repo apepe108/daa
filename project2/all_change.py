@@ -1,8 +1,10 @@
+from typing import List, Union
+
 from project1.currency import Currency
 import sys
 
 
-def _float2int(x):
+def _float2int(x: float) -> int:
     """ Convert float value with 2 decimal points to convenient notation in cents, with no CPU calculation error.
 
     :param x: the float value;
@@ -10,7 +12,7 @@ def _float2int(x):
     return round(x * 100)
 
 
-def _int2float(x):
+def _int2float(x: int) -> float:
     """ Convert cents value to float value with 2 decimal points, with no CPU calculation error.
 
     :param x: the values in cents;
@@ -18,7 +20,7 @@ def _int2float(x):
     return round(x / 100, 2)
 
 
-def all_change_number_only(cur: Currency, r: float):
+def all_change_number_only(cur: Currency, r: float) -> int:
     """This function, given in input a Currency Object and a float number r with at most two decimal points, returns all
     possible way to change r value with the currency c.
     (E.g., for a currency whose denominations are {0.1, 0.2, 0.5} and r=0.6, the algorithm must return 5, and the five
@@ -59,7 +61,7 @@ def all_change_number_only(cur: Currency, r: float):
     return T[-1][-1]
 
 
-def all_change(cur: Currency, r: float, max_permutation=1000):
+def all_change(cur: Currency, r: float, max_permutation=1000) -> List[Union[int, List]]:
     """This function, given in input a Currency Object and a float number r with at most two decimal points, returns all
     possible way to change r value with the currency c.
     (E.g., for a currency whose denominations are {0.1, 0.2, 0.5} and r=0.6, the algorithm must return 5, and the five
@@ -124,7 +126,7 @@ def all_change(cur: Currency, r: float, max_permutation=1000):
     return T[-1][-1]
 
 
-def all_change_number_only_bottom_up(cur: Currency, r: float):
+def all_change_number_only_bottom_up(cur: Currency, r: float) -> int:
     """This function, given in input a Currency Object and a float number r with at most two decimal points, returns all
     possible way to change r value with the currency c.
     (E.g., for a currency whose denominations are {0.1, 0.2, 0.5} and r=0.6, the algorithm must return 5, and the five
@@ -161,7 +163,7 @@ def all_change_number_only_bottom_up(cur: Currency, r: float):
     return T[n]
 
 
-def all_change_bottom_up(cur: Currency, r: float, max_permutation=1000):
+def all_change_bottom_up(cur: Currency, r: float, max_permutation=1000) -> List[Union[int, List]]:
     """This function, given in input a Currency Object and a float number r with at most two decimal points, returns all
     possible way to change r value with the currency c.
     (E.g., for a currency whose denominations are {0.1, 0.2, 0.5} and r=0.6, the algorithm must return 5, and the five
