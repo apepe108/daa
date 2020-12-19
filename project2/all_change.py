@@ -3,10 +3,18 @@ import sys
 
 
 def _float2int(x):
+    """ Convert float value with 2 decimal points to convenient notation in cents, with no CPU calculation error.
+
+    :param x: the float value;
+    :return: the values in cents."""
     return round(x * 100)
 
 
 def _int2float(x):
+    """ Convert cents value to float value with 2 decimal points, with no CPU calculation error.
+
+    :param x: the values in cents;
+    :return: the float value."""
     return round(x / 100, 2)
 
 
