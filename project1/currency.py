@@ -24,9 +24,9 @@ class Currency:
 
         :parameter 'value' is the value to add in Denomination map.
         :raise 'ValueError' if value is already present in the map."""
-        if value in self._denomination:                                     # O(log N)
+        if value in self._denomination:  # O(log N)
             raise ValueError('The value is already present')
-        self._denomination[value] = 0                                       # O(log N)
+        self._denomination[value] = 0  # O(log N)
 
     # complexity O(log N)
     def del_denomination(self, value):
@@ -34,7 +34,7 @@ class Currency:
 
         :parameter 'value' is the value to remove in Denomination map.
         :raise 'ValueError' if value is not present in the map."""
-        del(self._denomination[value])                                      # O(log N)
+        del (self._denomination[value])  # O(log N)
 
     # complexity O(2 log N)
     def min_denomination(self, value=None):
@@ -42,14 +42,14 @@ class Currency:
         exception if no denomination exists), otherwise it returns the minimum denomination larger than value
         (it raises an exception if no denomination exists larger than value)."""
         if value is None:
-            e = self._denomination.find_min()                               # O(log N)
+            e = self._denomination.find_min()  # O(log N)
             if e is None:
                 raise ValueError('no denomination exists')
             return e[0]
         else:
-            p = self._denomination.find_position(value)                     # O(log N)
+            p = self._denomination.find_position(value)  # O(log N)
             if p.key() < value:
-                p = self._denomination.after(p)                             # O(log N)
+                p = self._denomination.after(p)  # O(log N)
             if p is None:
                 raise ValueError('no denomination exists')
             return p.key()
@@ -60,14 +60,14 @@ class Currency:
         exception if no denomination exists), otherwise it returns the maximum denomination smaller than value (it
         raises an exception if no denomination exists larger than value)."""
         if value is None:
-            e = self._denomination.find_max()                               # O(log N)
+            e = self._denomination.find_max()  # O(log N)
             if e is None:
                 raise ValueError('no denomination exists')
             return e[0]
         else:
-            p = self._denomination.find_position(value)                     # O(log N)
+            p = self._denomination.find_position(value)  # O(log N)
             if p.key() > value:
-                p = self._denomination.before(p)                            # O(log N)
+                p = self._denomination.before(p)  # O(log N)
             if p is None:
                 raise ValueError('no denomination exists')
             return p.key()
@@ -76,33 +76,33 @@ class Currency:
     def next_denomination(self, value):
         """Return the denomination that follows value, if it exists, None otherwise. If value is not a denomination it
         raises an exception."""
-        p = self._denomination.find_position(value)                         # O(log N)
+        p = self._denomination.find_position(value)  # O(log N)
         if p is None or p.key() != value:
             raise ValueError('denomination not present')
-        n = self._denomination.after(p)                                     # O(log N)
+        n = self._denomination.after(p)  # O(log N)
         return n.key() if n is not None else None
 
     # complexity O(2 log N)
     def prev_denomination(self, value):
         """Return the denomination that precedes value, if it exists, None otherwise. If value is not a denomination it
         raises an exception."""
-        p = self._denomination.find_position(value)                         # O(log N)
+        p = self._denomination.find_position(value)  # O(log N)
         if p is None or p.key() != value:
             raise ValueError('denomination not present')
-        prev = self._denomination.before(p)                                 # O(log N)
+        prev = self._denomination.before(p)  # O(log N)
         return prev.key() if prev is not None else None
 
     def has_denominations(self):
         """Return true if the Denominations map is not empty."""
-        return not self._denomination.is_empty()                            # O(1)
+        return not self._denomination.is_empty()  # O(1)
 
     def num_denominations(self):
         """Returns the number of elements in the Denominations map."""
-        return len(self._denomination)                                      # O(1)
+        return len(self._denomination)  # O(1)
 
     def clear_denominations(self):
         """Remove all elements from the Denominations map."""
-        self._denomination.clear()                                          # O(N)
+        self._denomination.clear()  # O(N)
 
     def iter_denominations(self, reverse=False):
         """Returns an iterator over the Denominations map. If reverse is false (default value), the iterator must
@@ -118,19 +118,19 @@ class Currency:
     def add_change(self, currencycode, change):
         """Add an entry in the Changes hash map, whose key is currencycode and whose value is change. It raises an
         exception if the key currencycode is already present."""
-        if currencycode in self._changes:                                   # O(1) EXPECTED
+        if currencycode in self._changes:  # O(1) EXPECTED
             raise KeyError('currencycode already exists')
-        self._changes[currencycode] = change                                # O(1) EXPECTED
+        self._changes[currencycode] = change  # O(1) EXPECTED
 
     def remove_change(self, currencycode):
         """Remove the entry with key currencycode from the Changes hash map. It raises an exception if the key
         currencycode is not present."""
-        del(self._changes[currencycode])                                    # O(1) EXPECTED
+        del (self._changes[currencycode])  # O(1) EXPECTED
 
     def update_change(self, currencycode, change):
         """Updates the value associated with key currencycode to change.If the key currencycode does not exist, it will
          be inserted in the Changes hash map."""
-        self._changes[currencycode] = change                                # O(1) EXPECTED
+        self._changes[currencycode] = change  # O(1) EXPECTED
 
     def copy(self):
         """Create a new Object Currency whose attributes are equivalent to the ones of the current currency.
@@ -162,6 +162,9 @@ class Currency:
     def __str__(self):
         return self._code
 
+
+    def get_change(self, currencycode):
+        return self._changes[currencycode]
 
 if __name__ == '__main__':
     print('---------- Try add_denomination and reverse iter ----------------------')
@@ -377,19 +380,19 @@ if __name__ == '__main__':
 
     print('\n\n---------- Try remove_change ----------------------')
 
-    print("\ncur.remove_change('USD'): ", end='')
-    try:
-        cur.remove_change('USD')
-        print('success')
-    except KeyError as e:
-        print('error:', e)
-
-    print("\ncur.remove_change('BAB'): ", end='')
-    try:
-        cur.remove_change('BAB')
-        print('success')
-    except KeyError as e:
-        print('error:', e)
+    # print("\ncur.remove_change('USD'): ", end='')
+    # try:
+    #     cur.remove_change('USD')
+    #     print('success')
+    # except KeyError as e:
+    #     print('error:', e)
+    #
+    # print("\ncur.remove_change('BAB'): ", end='')
+    # try:
+    #     cur.remove_change('BAB')
+    #     print('success')
+    # except KeyError as e:
+    #     print('error:', e)
 
     print('\n\n---------- Try copy and deepcopy ----------------------')
 
@@ -430,3 +433,7 @@ if __name__ == '__main__':
     print('\ncur._changes == deepcopy_cur._changes: {}'.format(cur._changes == deepcopy_cur._changes))
     print('\ncur._changes is copy_cur._changes: {}'.format(cur._changes is copy_cur._changes))
     print('\ncur._changes is deepcopy_cur._changes: {}'.format(cur._changes is deepcopy_cur._changes))
+
+
+
+    print(cur.get_change('USD'))
