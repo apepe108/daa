@@ -20,6 +20,10 @@ def all_change_number_only(cur: Currency, r: float):
     :param r: the value to return the change;
     :return: the number of different ways that value r can be achieved by using denominations of the given currency;"""
 
+    # sub problem: combinations to return n < r with a set of coins s' subset of s
+    # base case: combinations to return 0 = 1
+    # characteristic equation: sum of combinations using that coin with combinations without using that coin.
+
     # introducing convenient notation working in cents
     m = cur.num_denominations()
     S = [_float2int(x) for x in cur.iter_denominations()]
@@ -47,7 +51,7 @@ def all_change_number_only(cur: Currency, r: float):
     return T[-1][-1]
 
 
-def all_change_sequence(cur: Currency, r: float):
+def all_change(cur: Currency, r: float):
     """This function, given in input a Currency Object and a float number r with at most two decimal points, returns all
     possible way to change r value with the currency c.
     (E.g., for a currency whose denominations are {0.1, 0.2, 0.5} and r=0.6, the algorithm must return 5, and the five
@@ -58,6 +62,10 @@ def all_change_sequence(cur: Currency, r: float):
     :returns: the number of different ways that value r can be achieved by using denominations of the given currency;
     :returns: the list of different changes of the value r that can be achieved by using denominations."""
 
+    # sub problem: combinations to return n < r with a set of coins s' subset of s
+    # base case: combinations to return 0 = 1
+    # characteristic equation: sum of combinations using that coin with combinations without using that coin.
+
     # introducing convenient notation working in cents
     m = cur.num_denominations()
     S = [_float2int(x) for x in cur.iter_denominations()]
@@ -66,7 +74,7 @@ def all_change_sequence(cur: Currency, r: float):
     # Construct table
     T = [[[0, []] for _ in range(m)] for _ in range(n + 1)]
 
-    # Fill the entries for 0 value case (n = 0)
+    # Base case (value zero has just one solution: empty list)
     for i in range(m):
         T[0][i] = [1, [[]]]
 
@@ -105,6 +113,13 @@ def all_change_number_only_bottom_up(cur: Currency, r: float):
     :param r: the value to return the change;
     :return: the number of different ways that value r can be achieved by using denominations of the given currency;"""
 
+    # sub problem: combinations to return n < r with a set of coins s' subset of s
+    # base case: combinations to return 0 = 1
+    # characteristic equation: sum of combinations using that coin with combinations without using that coin.
+    #
+    # Since it is expensive to save all solutions m times as many coins, the spatial complexity of m can be reduced by
+    # using a bottom up method.
+
     # introducing convenient notation working in cents
     m = cur.num_denominations()
     S = [_float2int(x) for x in cur.iter_denominations()]
@@ -113,11 +128,10 @@ def all_change_number_only_bottom_up(cur: Currency, r: float):
     # Construct table
     T = [0 for _ in range(n + 1)]
 
-    # Base case (value zero has just one solution: empty list)
+    # Base case (value zero has just one solution)
     T[0] = 1
 
-    # Pick all coins one by one and update the T[] values
-    # after the index greater than or equal to the value of the
+    # Pick all coins one by one and update the T[] values after the index greater than or equal to the value of the
     # picked coin
     for i in range(0, m):
         for j in range(S[i], n + 1):
@@ -138,13 +152,24 @@ def all_change_bottom_up(cur: Currency, r: float, max_permutation=1000):
     :returns: the number of different ways that value r can be achieved by using denominations of the given currency;
     :returns: the list of different changes of the value r that can be achieved by using denominations."""
 
+    # sub problem: combinations to return n < r with a set of coins s' subset of s
+    # base case: combinations to return 0 = 1
+    # characteristic equation: sum of combinations using that coin with combinations without using that coin.
+    #
+    # Since it is expensive to save all solutions m times as many coins, the spatial complexity of m can be reduced by
+    # using a bottom up method.
+
     # introducing convenient notation working in cents
     m = cur.num_denominations()
-    # use reverse getting some in between shortest sequence for canonical currency (all active currency are canonical)
+    n = _float2int(r)
+
+    # use reverse getting some in between shortest sequence for canonical currency (all active currency are canonical).
+    # This works because, proposing the coins on the contrary, you go every time to fill the solutions for which there
+    # were no coins in the previous iteration.
+    #
     # PLEASE NOTE: the shortest sequences are not always returned, for that there is the change function in the project1
     # package, but you avoid returning sequences formed by minimum currency to make them more understandable.
     S = [_float2int(x) for x in cur.iter_denominations(reverse=True)]
-    n = _float2int(r)
 
     # Construct table
     T = [[0, []] for _ in range(n + 1)]
@@ -152,8 +177,7 @@ def all_change_bottom_up(cur: Currency, r: float, max_permutation=1000):
     # Base case (value zero has just one solution: empty list)
     T[0] = [1, [[]]]
 
-    # Pick all coins one by one and update the T[] values
-    # after the index greater than or equal to the value of the
+    # Pick all coins one by one and update the T[] values after the index greater than or equal to the value of the
     # picked coin
     for i in range(0, m):
         for j in range(S[i], n + 1):
