@@ -64,7 +64,7 @@ def all_change(cur: Currency, r: float, max_permutation=1000):
     :returns: the list of different changes of the value r that can be achieved by using denominations."""
 
     # sub problem: combinations to return n < r with a set of coins s' subset of s
-    # base case: combinations to return 0 = 1
+    # base case: combinations to return 0 = 1: empty list
     # characteristic equation: sum of combinations using that coin with combinations without using that coin.
 
     # introducing convenient notation working in cents
@@ -166,7 +166,7 @@ def all_change_bottom_up(cur: Currency, r: float, max_permutation=1000):
     :returns: the list of different changes of the value r that can be achieved by using denominations."""
 
     # sub problem: combinations to return n < r with a set of coins s' subset of s
-    # base case: combinations to return 0 = 1
+    # base case: combinations to return 0 = 1: empty list
     # characteristic equation: sum of combinations using that coin with combinations without using that coin.
     #
     # Since it is expensive to save all solutions m times as many coins, the spatial complexity of m can be reduced by
