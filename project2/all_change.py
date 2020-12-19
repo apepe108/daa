@@ -1,8 +1,6 @@
 from project1.currency import Currency
 import sys
 
-PERMUTATION_MAX_LEN = 1000
-
 
 def _float2int(x):
     return round(x * 100)
@@ -128,7 +126,7 @@ def all_change_number_only_bottom_up(cur: Currency, r: float):
     return T[n]
 
 
-def all_change_bottom_up(cur: Currency, r: float):
+def all_change_bottom_up(cur: Currency, r: float, max_permutation=1000):
     """This function, given in input a Currency Object and a float number r with at most two decimal points, returns all
     possible way to change r value with the currency c.
     (E.g., for a currency whose denominations are {0.1, 0.2, 0.5} and r=0.6, the algorithm must return 5, and the five
@@ -136,6 +134,7 @@ def all_change_bottom_up(cur: Currency, r: float):
 
     :param cur: the currency to use to get the change;
     :param r: the value to return the change;
+    :param max_permutation: the number of max list of different changes to return;
     :returns: the number of different ways that value r can be achieved by using denominations of the given currency;
     :returns: the list of different changes of the value r that can be achieved by using denominations."""
 
@@ -161,10 +160,10 @@ def all_change_bottom_up(cur: Currency, r: float):
             # Get permutation number
             T[j][0] += T[j - S[i]][0]
 
-            # get max PERMUTATION_MAX_LEN permutation value
+            # get max_permutation permutation value
             range_start = 0
-            range_end = min(len(T[j - S[i]][1]), 1000)
-            while len(T[j][1]) < PERMUTATION_MAX_LEN and range_start < range_end:
+            range_end = min(len(T[j - S[i]][1]), max_permutation)
+            while len(T[j][1]) < max_permutation and range_start < range_end:
                 sol = T[j - S[i]][1][range_start]
                 T[j][1].append(sol[:] + [S[i]])
                 range_start += 1
@@ -193,7 +192,7 @@ if __name__ == '__main__':
     c.add_denomination(20)
     c.add_denomination(50)
 
-    value = 55.5
+    value = 2
 
     original_stdout = sys.stdout  # Save a reference to the original standard output
 
