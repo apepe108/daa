@@ -36,7 +36,7 @@ def all_change_number_only(cur: Currency, r: float):
     for i in range(m):
         T[0][i] = 1
 
-    # Fill rest of the table entries in bottom up manner
+    # Fill rest of the table entries
     for i in range(1, n + 1):
         for j in range(m):
             # Count of solutions including S[j]
@@ -79,7 +79,7 @@ def all_change(cur: Currency, r: float, max_permutation=1000):
     for i in range(m):
         T[0][i] = [1, [[]]]
 
-    # Fill rest of the table entries in bottom up manner
+    # Fill rest of the table entries
     for i in range(1, n + 1):
         for j in range(m):
             # Count of solutions including S[j]
@@ -232,7 +232,7 @@ if __name__ == '__main__':
 
     original_stdout = sys.stdout  # Save a reference to the original standard output
 
-    with open('result_es2.txt', 'w') as f:
+    with open('output_all_change.txt', 'w') as f:
         sys.stdout = f  # Change the standard output to the file we created.
 
         print('\n\nvalue {} -> {}'.format(value, all_change(c, value)))
