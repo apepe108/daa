@@ -179,8 +179,8 @@ def all_change_bottom_up(cur: Currency, r: float, max_permutation=1000):
 
 if __name__ == '__main__':
     c = Currency('EUR')
-    c.add_denomination(0.01)
-    c.add_denomination(0.02)
+    # c.add_denomination(0.01)
+    # c.add_denomination(0.02)
     c.add_denomination(0.05)
     c.add_denomination(0.1)
     c.add_denomination(0.2)
@@ -192,7 +192,7 @@ if __name__ == '__main__':
     c.add_denomination(20)
     c.add_denomination(50)
 
-    value = 2
+    value = 24.05
 
     original_stdout = sys.stdout  # Save a reference to the original standard output
 
