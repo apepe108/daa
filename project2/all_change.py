@@ -87,24 +87,22 @@ def all_change(cur: Currency, r: float, max_permutation=1000):
 
             # get max_permutation permutation value
             if x > 0:
-                range_start = 0
-                range_end = min(len(T[i - S[j]][j][1]), max_permutation)
-                while len(T[i - S[j]][j][1]) < max_permutation and range_start < range_end:
-                    sol = T[i - S[j]][j][1][range_start]
+                k = 0
+                while len(T[i][j][1]) < max_permutation and k < len(T[i - S[j]][j][1]):
+                    sol = T[i - S[j]][j][1][k]
                     T[i][j][1].append(sol[:] + [S[j]])
-                    range_start += 1
+                    k += 1
 
             # Count of solutions excluding S[j]
             y = T[i][j - 1][0] if j >= 1 else 0
 
             # get max_permutation permutation value
             if y > 0:
-                range_start = 0
-                range_end = min(len(T[i][j - 1][1]), max_permutation)
-                while len(T[i][j - 1][1]) < max_permutation and range_start < range_end:
-                    sol = T[i][j - 1][1][range_start]
+                k = 0
+                while len(T[i][j][1]) < max_permutation and k < len(T[i][j - 1][1]):
+                    sol = T[i][j - 1][1][k]
                     T[i][j][1].append(sol[:])
-                    range_start += 1
+                    k += 1
 
             # total count
             T[i][j][0] = x + y
@@ -200,12 +198,11 @@ def all_change_bottom_up(cur: Currency, r: float, max_permutation=1000):
             T[j][0] += T[j - S[i]][0]
 
             # get max_permutation permutation value
-            range_start = 0
-            range_end = min(len(T[j - S[i]][1]), max_permutation)
-            while len(T[j][1]) < max_permutation and range_start < range_end:
-                sol = T[j - S[i]][1][range_start]
+            k = 0
+            while len(T[j][1]) < max_permutation and k < len(T[j - S[i]][1]):
+                sol = T[j - S[i]][1][k]
                 T[j][1].append(sol[:] + [S[i]])
-                range_start += 1
+                k += 1
 
     # reconvert result in float value
     for i in range(len(T[n][1])):
@@ -231,16 +228,16 @@ if __name__ == '__main__':
     c.add_denomination(20)
     c.add_denomination(50)
 
-    value = 2.01
+    value = 2
 
     original_stdout = sys.stdout  # Save a reference to the original standard output
 
     with open('result_es2.txt', 'w') as f:
         sys.stdout = f  # Change the standard output to the file we created.
 
-        # print('\n\nvalue {} -> {}'.format(value, all_change(c, value)))
-        # print('\n\nvalue {} -> {}'.format(value, all_change_number_only(c, value)))
-        # print('\n\nvalue {} -> {}'.format(value, all_change_number_only_bottom_up(c, value)))
+        print('\n\nvalue {} -> {}'.format(value, all_change(c, value)))
+        print('\n\nvalue {} -> {}'.format(value, all_change_number_only(c, value)))
+        print('\n\nvalue {} -> {}'.format(value, all_change_number_only_bottom_up(c, value)))
         print('\n\nvalue {} -> {}'.format(value, all_change_bottom_up(c, value)))
 
         sys.stdout = original_stdout  # Reset the standard output to its original value
