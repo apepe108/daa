@@ -162,6 +162,8 @@ class Currency:
     def __str__(self):
         return self._code
 
+    def __repr__(self):
+        return str(self)
 
     def get_change(self, currencycode):
         return self._changes[currencycode]
