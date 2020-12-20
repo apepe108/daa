@@ -1,4 +1,3 @@
-from TdP_collections.graphs.transitive_closure import floyd_warshall
 from project1.currency import Currency
 from TdP_collections.graphs.graph import Graph
 
@@ -24,10 +23,6 @@ def _create_graph(set_currencies):
         for change in cur._changes:
             g.insert_edge(vert, V[change], cur.get_change(change))
 
-    # print_graph(g)
-    # closure = floyd_warshall(g)
-    # print("Number of edges in closure is", closure.edge_count(), '\n\n')
-
     return g, V
 
 
@@ -48,7 +43,7 @@ def arbitrage_opportunity(C, s):
         return None
 
     D = {}
-    prev = {}
+    P = {}
 
     # Step 1: Initialize single source
     for vert in g.vertices():
@@ -58,102 +53,64 @@ def arbitrage_opportunity(C, s):
             D[vert] = float('inf')
 
     # Step 2: Relax all edges |V| - 1 times.
-    for _ in range(g.vertex_count()):   # miss -1
+    for _ in range(g.vertex_count() - 1):
         for edge in g.edges():
             u, v = edge.endpoints()  # for each u, v couple of vertex in g
             w = edge.element()
-            if D[v] > round(D[u] + w, 3):  # relax
-                D[v] = round(D[u] + w, 3)
-                prev[v] = u
+            if D[v] > D[u] + w:  # relax
+                D[v] = D[u] + w
+                P[v] = u
 
     # Verify presence of negative cycle
     for edge in g.edges():
         u, v = edge.endpoints()  # for each u, v couple of vertex in g
-        w = edge.element()
-        if D[v] > round(D[u] + w, 3):
-            # algorithm does not work because there is a negative cycle
+        if D[v] > round(D[u] + edge.element(), 7):
+
+            # Bellman theorem not satisfied -> there's a negative cycle
+            cycle = []
+            earn = 0
+            curr = list(P.keys())[0]
             try:
-                # Starting from s, travels to its ancestors until it finds a the vertex from which started
-                cycle = []
-                curr = V[s._code]
-                while True:
-                    p = prev[curr]
-                    cycle.append(p.element())
-                    if p == V[s._code]:
-                        cycle.reverse()
-                        return cycle
-                    curr = p
+                while earn >= 0 or curr.element() not in cycle:
+                    cycle.append(curr.element())
+                    prev = P[curr]
+                    earn += g.get_edge(prev, curr).element()
+
+                    curr = prev
+
+                cycle.append(curr.element())
+                cycle.reverse()
+
+                # cycle end with same currency with which it begins
+                while cycle[-1] is not curr.element():
+                    rem = cycle.pop()
+                    earn -= g.get_edge(V[cycle[-1]], V[rem]).element()
+
+                if s in cycle:
+                    i = cycle.index(s)
+                    return cycle[i:] + cycle[1:i + 1], earn
+
+                return cycle, earn
             except KeyError:
-                # the negative cycle do not pass by s
-                return False, prev
+                print('\n\n', P)
+                continue
 
     # There is not arbitrage opportunity
     return False
 
 
-def print_graph(graph):
-    print("Vertices : ")
-    for i in graph.vertices():
-        print(i)
-    print("Edges : ")
-    for i in graph.edges():
-        print(i)
-
-
 if __name__ == '__main__':
-    # cur1 = Currency('EUR')
-    # cur1.add_change('USD', 1000)
-    # cur1.add_change('AAA', -2000)
-    #
-    # cur2 = Currency('GBP')
-    # cur2.add_change('USD', 5)
-    # cur2.add_change('EUR', 1000)
-    #
-    # cur3 = Currency('USD')
-    # cur3.add_change('EUR', 1)
-    # cur3.add_change('GBP', 10000)
-    #
-    # cur4 = Currency('AAA')
-    # cur4.add_change('GBP', 1000)
-    # cur4.add_change('USD', 1)
-    # cur4.add_change('BBB', 40)
-    # cur2.add_change('CCC', 1)
-    #
-    # cur5 = Currency('BBB')
-    #
-    # cur5.add_change('GBP', 1000)
-    # cur5.add_change('AAA', 5)
-    # cur5.add_change('USD', -9)
-    #
-    # cur6 = Currency('CCC')
-    # cur6.add_change('EUR', 1)
-    # cur6.add_change('GBP', 1000)
-    # cur6.add_change('BBB', -32)
-    #
-    # cur7 = Currency('DDD')
-    # cur7.add_change('EUR', 1)
-    # cur7.add_change('GBP', 1000)
-    #
-    # currencies = {cur1, cur2, cur3, cur4, cur5, cur6, cur7}
-    # graph = _create_graph(currencies)
-    # print_graph(graph[0])
-    #
-    # closure = floyd_warshall(graph[0])
-    # print("Number of edges in closure is", closure.edge_count())
-    #
-    # print("\n\n")
-
     eur = Currency('EUR')
     eur.add_change('GBP', -0.31)
-    eur.add_change('USD', 1)
+    eur.add_change('USD', 0.1)
 
     usd = Currency('USD')
-    usd.add_change('EUR', 0.3)
-    usd.add_change('GBP', 1)
+    usd.add_change('EUR', 0.005)
+    usd.add_change('GBP', 0.1)
 
     gbp = Currency('GBP')
-    gbp.add_change('USD', 0.005)
-    gbp.add_change('EUR', 1)
+    gbp.add_change('USD', 0.1)
+    gbp.add_change('EUR', 0.1)
 
     for _ in range(1000):
         print(arbitrage_opportunity({eur, usd, gbp}, usd))
