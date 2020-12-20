@@ -113,8 +113,8 @@ def arbitrage_opportunity(C, s):
         for edge in g.edges():
             u, v = edge.endpoints()  # for each u, v couple of vertex in g
             w = edge.element()
-            if D[v] > D[u] + w:  # relax
-                D[v] = D[u] + w
+            if D[v] > round(D[u] + w, 10):  # relax
+                D[v] = round(D[u] + w, 10)
                 P[v] = u
 
     # Verify presence of negative cycle
