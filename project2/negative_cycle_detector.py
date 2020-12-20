@@ -11,19 +11,63 @@ def _create_graph(set_currencies):
     :returns: a map containing the vertex associated at them currency code."""
     # instantiate direct graph
     g = Graph(True)
-    V = {}
+    V = {}  # store V[currencycode] = vertex(currency)
 
     # add all vertices
     for cur in set_currencies:
-        V[cur._code] = g.insert_vertex(cur)
+        V[cur.code()] = g.insert_vertex(cur)
 
     # for each vertex add edge corresponding to exchange rate
     for vert in g.vertices():
         cur = vert.element()
-        for change in cur._changes:
+        for change in cur.iter_changes():
             g.insert_edge(vert, V[change], cur.get_change(change))
 
     return g, V
+
+
+def _reconstruct_cycle(g, s, V, P):
+    """Given a graph with a negative cycle inside it and a dictionary that reconstructs the path of a negative cycle,
+    it reconstructs the path from an initial currency s to the cycle and back to s, so that the gain is negative.
+
+    :param g: graph containing the negative cycle;
+    :param s: the starting currency;
+    :param V: a dict representing V[currencycode] = vector(currency);
+    :param P: dictionary used to reconstruct the cycle path;
+    :return: a list of vector sequence and the earned value."""
+
+    cycle = []
+    earn = 0
+    curr = list(P.keys())[0]
+
+    # go up the cycle until you find the negative cycle
+    while earn >= 0 or curr.element() not in cycle:
+        cycle.append(curr.element())
+        prev = P[curr]
+        earn += g.get_edge(prev, curr).element()
+        curr = prev
+
+    cycle.append(curr.element())
+    cycle.reverse()
+
+    # cycle end with same currency with which it begins
+    while cycle[-1] is not curr.element():
+        rem = cycle.pop()
+        earn -= g.get_edge(V[cycle[-1].code()], V[rem.code()]).element()
+
+    if s in cycle:
+        # if starting currency is in the cycle
+        i = cycle.index(s)
+        return cycle[i:] + cycle[1:i + 1], earn
+    else:
+        # if starting currency is not in the cycle
+        earn_go_to_cycle = g.get_edge(V[s.code()], V[cycle[0].code()]).element()
+        earn_go_back = g.get_edge(V[cycle[-1].code()], V[s.code()]).element()
+        move_earn = earn_go_back + earn_go_to_cycle
+        k = 0
+        while move_earn + k * earn > 0:
+            k += 1
+        return [s] + k * cycle + [s], k * earn + earn_go_to_cycle + earn_go_back
 
 
 def arbitrage_opportunity(C, s):
@@ -36,14 +80,14 @@ def arbitrage_opportunity(C, s):
     opportunity for s within the given set of currencies, and otherwise it returns a cycle that witnesses the arbitrage
     opportunity for s."""
 
-    g, V = _create_graph(C)
+    g, V = _create_graph(C)  # V[currencycode] = vertex(currency)
 
     # check if s is in C
-    if V[s._code] not in g.vertices():
+    if V[s.code()] not in g.vertices():
         return None
 
-    D = {}
-    P = {}
+    D = {}  # Store D[vertex] = w max
+    P = {}  # Store P[next] = prev
 
     # Step 1: Initialize single source
     for vert in g.vertices():
@@ -53,7 +97,7 @@ def arbitrage_opportunity(C, s):
             D[vert] = float('inf')
 
     # Step 2: Relax all edges |V| - 1 times.
-    for _ in range(g.vertex_count() - 1):
+    for _ in range(g.vertex_count()):
         for edge in g.edges():
             u, v = edge.endpoints()  # for each u, v couple of vertex in g
             w = edge.element()
@@ -64,36 +108,9 @@ def arbitrage_opportunity(C, s):
     # Verify presence of negative cycle
     for edge in g.edges():
         u, v = edge.endpoints()  # for each u, v couple of vertex in g
-        if D[v] > round(D[u] + edge.element(), 7):
-
+        if D[v] > D[u] + edge.element():
             # Bellman theorem not satisfied -> there's a negative cycle
-            cycle = []
-            earn = 0
-            curr = list(P.keys())[0]
-            try:
-                while earn >= 0 or curr.element() not in cycle:
-                    cycle.append(curr.element())
-                    prev = P[curr]
-                    earn += g.get_edge(prev, curr).element()
-
-                    curr = prev
-
-                cycle.append(curr.element())
-                cycle.reverse()
-
-                # cycle end with same currency with which it begins
-                while cycle[-1] is not curr.element():
-                    rem = cycle.pop()
-                    earn -= g.get_edge(V[cycle[-1]], V[rem]).element()
-
-                if s in cycle:
-                    i = cycle.index(s)
-                    return cycle[i:] + cycle[1:i + 1], earn
-
-                return cycle, earn
-            except KeyError:
-                print('\n\n', P)
-                continue
+            return _reconstruct_cycle(g, s, V, P)
 
     # There is not arbitrage opportunity
     return False

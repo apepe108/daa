@@ -18,6 +18,9 @@ class Currency:
         self._denomination = AVLTreeMap()
         self._changes = DoubleHashingHashMap()
 
+    def code(self):
+        return self._code
+
     # complexity O(2 log N)
     def add_denomination(self, value):
         """Add value in the Denominations map. It raises an exception if value is already present.
@@ -132,6 +135,13 @@ class Currency:
          be inserted in the Changes hash map."""
         self._changes[currencycode] = change  # O(1) EXPECTED
 
+    def get_change(self, currencycode):
+        return self._changes[currencycode]
+
+    def iter_changes(self):
+        for key in self._changes:
+            yield key
+
     def copy(self):
         """Create a new Object Currency whose attributes are equivalent to the ones of the current currency.
 
@@ -165,8 +175,6 @@ class Currency:
     def __repr__(self):
         return str(self)
 
-    def get_change(self, currencycode):
-        return self._changes[currencycode]
 
 if __name__ == '__main__':
     print('---------- Try add_denomination and reverse iter ----------------------')
@@ -435,7 +443,5 @@ if __name__ == '__main__':
     print('\ncur._changes == deepcopy_cur._changes: {}'.format(cur._changes == deepcopy_cur._changes))
     print('\ncur._changes is copy_cur._changes: {}'.format(cur._changes is copy_cur._changes))
     print('\ncur._changes is deepcopy_cur._changes: {}'.format(cur._changes is deepcopy_cur._changes))
-
-
 
     print(cur.get_change('USD'))
