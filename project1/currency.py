@@ -390,19 +390,19 @@ if __name__ == '__main__':
 
     print('\n\n---------- Try remove_change ----------------------')
 
-    # print("\ncur.remove_change('USD'): ", end='')
-    # try:
-    #     cur.remove_change('USD')
-    #     print('success')
-    # except KeyError as e:
-    #     print('error:', e)
-    #
-    # print("\ncur.remove_change('BAB'): ", end='')
-    # try:
-    #     cur.remove_change('BAB')
-    #     print('success')
-    # except KeyError as e:
-    #     print('error:', e)
+    print("\ncur.remove_change('USD'): ", end='')
+    try:
+        cur.remove_change('USD')
+        print('success')
+    except KeyError as e:
+        print('error:', e)
+
+    print("\ncur.remove_change('BAB'): ", end='')
+    try:
+        cur.remove_change('BAB')
+        print('success')
+    except KeyError as e:
+        print('error:', e)
 
     print('\n\n---------- Try copy and deepcopy ----------------------')
 
@@ -443,5 +443,3 @@ if __name__ == '__main__':
     print('\ncur._changes == deepcopy_cur._changes: {}'.format(cur._changes == deepcopy_cur._changes))
     print('\ncur._changes is copy_cur._changes: {}'.format(cur._changes is copy_cur._changes))
     print('\ncur._changes is deepcopy_cur._changes: {}'.format(cur._changes is deepcopy_cur._changes))
-
-    print(cur.get_change('USD'))
