@@ -20,7 +20,7 @@ def _int2float(x: int) -> float:
     return round(x / 100, 2)
 
 
-def all_change_number_only(cur: Currency, r: float) -> int:
+def all_change_number_only(cur: Currency, r: float, only_cents=True) -> int:
     """This function, given in input a Currency Object and a float number r with at most two decimal points, returns all
     possible way to change r value with the currency c.
     (E.g., for a currency whose denominations are {0.1, 0.2, 0.5} and r=0.6, the algorithm must return 5, and the five
@@ -28,6 +28,7 @@ def all_change_number_only(cur: Currency, r: float) -> int:
 
     :param cur: the currency to use to get the change;
     :param r: the value to return the change;
+    :param only_cents: if the currency contain only integer denomination, set True for minimize (:100) the iteration.
     :return: the number of different ways that value r can be achieved by using denominations of the given currency;"""
 
     # sub problem: combinations to return n < r with a set of coins s' subset of s
@@ -36,8 +37,8 @@ def all_change_number_only(cur: Currency, r: float) -> int:
 
     # introducing convenient notation working in cents
     m = cur.num_denominations()
-    S = [_float2int(x) for x in cur.iter_denominations()]
-    n = _float2int(r)
+    S = [_float2int(x) for x in cur.iter_denominations()] if not only_cents else [_ for _ in cur.iter_denominations()]
+    n = _float2int(r) if not only_cents else r
 
     # Construct table
     T = [[0 for _ in range(m)] for _ in range(n + 1)]
@@ -61,7 +62,7 @@ def all_change_number_only(cur: Currency, r: float) -> int:
     return T[-1][-1]
 
 
-def all_change(cur: Currency, r: float, max_permutation=1000) -> List[Union[int, List]]:
+def all_change(cur: Currency, r: float, max_permutation=1000, only_cents=True) -> List[Union[int, List]]:
     """This function, given in input a Currency Object and a float number r with at most two decimal points, returns all
     possible way to change r value with the currency c.
     (E.g., for a currency whose denominations are {0.1, 0.2, 0.5} and r=0.6, the algorithm must return 5, and the five
@@ -70,6 +71,7 @@ def all_change(cur: Currency, r: float, max_permutation=1000) -> List[Union[int,
     :param cur: the currency to use to get the change;
     :param r: the value to return the change;
     :param max_permutation: the number of max list of different changes to return;
+    :param only_cents: if the currency contain only integer denomination, set True for minimize (:100) the iteration.
     :returns: the number of different ways that value r can be achieved by using denominations of the given currency;
     :returns: the list of different changes of the value r that can be achieved by using denominations."""
 
@@ -79,8 +81,8 @@ def all_change(cur: Currency, r: float, max_permutation=1000) -> List[Union[int,
 
     # introducing convenient notation working in cents
     m = cur.num_denominations()
-    S = [_float2int(x) for x in cur.iter_denominations()]
-    n = _float2int(r)
+    S = [_float2int(x) for x in cur.iter_denominations()] if not only_cents else [_ for _ in cur.iter_denominations()]
+    n = _float2int(r) if not only_cents else r
 
     # Construct table
     T = [[[0, []] for _ in range(m)] for _ in range(n + 1)]
@@ -118,15 +120,16 @@ def all_change(cur: Currency, r: float, max_permutation=1000) -> List[Union[int,
             T[i][j][0] = x + y
 
     # reconvert result in initial value
-    for i in range(len(T[-1][-1][1])):
-        sol = T[-1][-1][1][i]
-        for j in range(len(sol)):
-            sol[j] = _int2float(sol[j])
+    if not only_cents:
+        for i in range(len(T[-1][-1][1])):
+            sol = T[-1][-1][1][i]
+            for j in range(len(sol)):
+                sol[j] = _int2float(sol[j])
 
     return T[-1][-1]
 
 
-def all_change_number_only_bottom_up(cur: Currency, r: float) -> int:
+def all_change_number_only_bottom_up(cur: Currency, r: float, only_cents=True) -> int:
     """This function, given in input a Currency Object and a float number r with at most two decimal points, returns all
     possible way to change r value with the currency c.
     (E.g., for a currency whose denominations are {0.1, 0.2, 0.5} and r=0.6, the algorithm must return 5, and the five
@@ -134,6 +137,7 @@ def all_change_number_only_bottom_up(cur: Currency, r: float) -> int:
 
     :param cur: the currency to use to get the change;
     :param r: the value to return the change;
+    :param only_cents: if the currency contain only integer denomination, set True for minimize (:100) the iteration.
     :return: the number of different ways that value r can be achieved by using denominations of the given currency;"""
 
     # sub problem: combinations to return n < r with a set of coins s' subset of s
@@ -145,8 +149,8 @@ def all_change_number_only_bottom_up(cur: Currency, r: float) -> int:
 
     # introducing convenient notation working in cents
     m = cur.num_denominations()
-    S = [_float2int(x) for x in cur.iter_denominations()]
-    n = _float2int(r)
+    S = [_float2int(x) for x in cur.iter_denominations()] if not only_cents else [_ for _ in cur.iter_denominations()]
+    n = _float2int(r) if not only_cents else r
 
     # Construct table
     T = [0 for _ in range(n + 1)]
@@ -163,7 +167,7 @@ def all_change_number_only_bottom_up(cur: Currency, r: float) -> int:
     return T[n]
 
 
-def all_change_bottom_up(cur: Currency, r: float, max_permutation=1000) -> List[Union[int, List]]:
+def all_change_bottom_up(cur: Currency, r: float, max_permutation=1000, only_cents=True) -> List[Union[int, List]]:
     """This function, given in input a Currency Object and a float number r with at most two decimal points, returns all
     possible way to change r value with the currency c.
     (E.g., for a currency whose denominations are {0.1, 0.2, 0.5} and r=0.6, the algorithm must return 5, and the five
@@ -172,6 +176,7 @@ def all_change_bottom_up(cur: Currency, r: float, max_permutation=1000) -> List[
     :param cur: the currency to use to get the change;
     :param r: the value to return the change;
     :param max_permutation: the number of max list of different changes to return;
+    :param only_cents: if the currency contain only integer denomination, set True for minimize (:100) the iteration.
     :returns: the number of different ways that value r can be achieved by using denominations of the given currency;
     :returns: the list of different changes of the value r that can be achieved by using denominations."""
 
@@ -184,7 +189,7 @@ def all_change_bottom_up(cur: Currency, r: float, max_permutation=1000) -> List[
 
     # introducing convenient notation working in cents
     m = cur.num_denominations()
-    n = _float2int(r)
+    n = _float2int(r) if not only_cents else r
 
     # use reverse getting some in between shortest sequence for canonical currency (all active currency are canonical).
     # This works because, proposing the coins on the contrary, you go every time to fill the solutions for which there
@@ -192,7 +197,8 @@ def all_change_bottom_up(cur: Currency, r: float, max_permutation=1000) -> List[
     #
     # PLEASE NOTE: the shortest sequences are not always returned, for that there is the change function in the project1
     # package, but you avoid returning sequences formed by minimum currency to make them more understandable.
-    S = [_float2int(x) for x in cur.iter_denominations(reverse=True)]
+    S = [_float2int(x) for x in cur.iter_denominations(reverse=True)] \
+        if not only_cents else [_ for _ in cur.iter_denominations(reverse=True)]
 
     # Construct table
     T = [[0, []] for _ in range(n + 1)]
@@ -215,10 +221,11 @@ def all_change_bottom_up(cur: Currency, r: float, max_permutation=1000) -> List[
                 k += 1
 
     # reconvert result in float value
-    for i in range(len(T[n][1])):
-        sol = T[n][1][i]
-        for j in range(len(sol)):
-            sol[j] = _int2float(sol[j])
+    if not only_cents:
+        for i in range(len(T[n][1])):
+            sol = T[n][1][i]
+            for j in range(len(sol)):
+                sol[j] = _int2float(sol[j])
 
     return T[n]
 
@@ -238,16 +245,35 @@ if __name__ == '__main__':
     c.add_denomination(20)
     c.add_denomination(50)
 
-    value = 2
+    value = 0.08
+
+    cent = Currency('CEN')
+    cent.add_denomination(1)
+    cent.add_denomination(2)
+    cent.add_denomination(5)
+    cent.add_denomination(10)
+    cent.add_denomination(20)
+    cent.add_denomination(50)
+    cent.add_denomination(100)
+    cent.add_denomination(200)
+    cent.add_denomination(500)
+    cent.add_denomination(1000)
+    cent.add_denomination(2000)
+    cent.add_denomination(5000)
 
     original_stdout = sys.stdout  # Save a reference to the original standard output
 
     with open('output_all_change.txt', 'w') as f:
         sys.stdout = f  # Change the standard output to the file we created.
 
-        print('\n\nvalue {} -> {}'.format(value, all_change(c, value)))
-        print('\n\nvalue {} -> {}'.format(value, all_change_number_only(c, value)))
-        print('\n\nvalue {} -> {}'.format(value, all_change_number_only_bottom_up(c, value)))
-        print('\n\nvalue {} -> {}'.format(value, all_change_bottom_up(c, value)))
+        print('\n\nvalue {} -> {}'.format(value, all_change(c, value, only_cents=False)))
+        print('\n\nvalue {} -> {}'.format(value, all_change_number_only(c, value, only_cents=False)))
+        print('\n\nvalue {} -> {}'.format(value, all_change_number_only_bottom_up(c, value, only_cents=False)))
+        print('\n\nvalue {} -> {}'.format(value, all_change_bottom_up(c, value, only_cents=False)))
+
+        print('\n\nvalue {} -> {}'.format(_float2int(value), all_change(cent, _float2int(value))))
+        print('\n\nvalue {} -> {}'.format(_float2int(value), all_change_number_only(cent, _float2int(value))))
+        print('\n\nvalue {} -> {}'.format(_float2int(value), all_change_number_only_bottom_up(cent, _float2int(value))))
+        print('\n\nvalue {} -> {}'.format(_float2int(value), all_change_bottom_up(cent, _float2int(value))))
 
         sys.stdout = original_stdout  # Reset the standard output to its original value
