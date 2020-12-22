@@ -4,12 +4,11 @@ import random
 
 
 class ABTreeMap(ABTree, MapBase):
-
     # -------------- Nested Class Item --------------
     class _Item(MapBase._Item):
         def __str__(self):
             return str(self._key) + ': ' + str(self._value)
-        
+
         def __repr__(self):
             return str(self)
 
@@ -23,6 +22,12 @@ class ABTreeMap(ABTree, MapBase):
             """Return value of map's key-value pair."""
             return self.element()[i]._value
 
+        def __str__(self):
+            return str(self.element())
+
+        def __repr__(self):
+            return str(self)
+
     # -------- ABMap Method ---------------------------------
 
     def __getitem__(self, key):
@@ -34,10 +39,21 @@ class ABTreeMap(ABTree, MapBase):
         if self.is_empty():
             raise KeyError('not found')
         p, i = self._subtree_search(self.root(), key)
-        if p.key(i) == key:
-            return p.value(i)
-        else:
+        try:
+            if p.key(i) == key:
+                return p.value(i)
+            else:
+                raise KeyError('not found')
+        except IndexError:
             raise KeyError('not found')
+
+    def search(self, key):
+        p, i = self._subtree_search(self.root(), key)
+        try:
+            _ = p.key(i)
+        except IndexError:
+            return p, i - 1
+        return p, i
 
     def _subtree_search(self, p, e):
         found, i = self._list_search(p.element(), e)
@@ -62,7 +78,7 @@ class ABTreeMap(ABTree, MapBase):
             p, i = self._add_root(self._Item(k, v))
         else:
             p, i = self._subtree_search(self.root(), k)
-            if i <= len(p.element())-1 and p.key(i) == k:
+            if i <= len(p.element()) - 1 and p.key(i) == k:
                 p.element()[i]._value = v  # replace existing item's value
                 return
             else:
