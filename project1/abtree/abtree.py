@@ -155,10 +155,32 @@ class ABTree(Tree):
 
         Return None if p at index i is the last position."""
         self._validate(p)
-        if not 0 >= i >= len(p.element()) - 1:
+        if not 0 <= i <= len(p.element()) - 1:
             raise IndexError('index out of range')
         if self.is_leaf(p):
-            return None if i == len(p.element()) - 1 else p, i + 1
+            # if there is a bigger element in the node
+            if i < len(p.element()) - 1:
+                return p, i + 1
+
+            curr = p
+            while True:
+                # if curr is root there is not a bigger element
+                if curr == self.root():
+                    return None
+
+                # search for current node's index among parent's children
+                curr_index = 0
+                for c in self.children(self.parent(curr)):  # search for the parent
+                    if c == curr:
+                        break
+                    curr_index += 1
+
+                if curr_index < len(self.parent(curr).element()):
+                    # if curr has at least one right brother, return the father who is in the middle
+                    return self.parent(curr), curr_index
+                else:
+                    # if curr is a left child, repeat the search on the parent
+                    curr = self.parent(curr)
         else:
             return self._subtree_first_position(self.child(p, i + 1))
 
@@ -167,10 +189,31 @@ class ABTree(Tree):
 
         Return None if p at index i is the first position."""
         self._validate(p)
-        if not 0 <= i <= len(p.element())-1:
+        if not 0 <= i <= len(p.element()) - 1:
             raise IndexError('index out of range')
         if self.is_leaf(p):
-            return None if i == 0 else p, i-1
+            if i > 0:
+                # if there is a smaller element in the node
+                return p, i-1
+            curr = p
+            while True:
+                # if curr is root there is not a smaller element
+                if curr == self.root():
+                    return None
+
+                # search for current node's index among parent's children
+                curr_index = 0
+                for c in self.children(self.parent(curr)):  # search for the parent
+                    if c == curr:
+                        break
+                    curr_index += 1
+
+                # if curr is not a left child of parent
+                if curr_index != 0:
+                    return self.parent(curr), curr_index - 1
+                # if curr is a left child, repeat the search on the parent
+                else:
+                    curr = self.parent(curr)
         else:
             return self._subtree_last_position(self.child(p, i))
 
