@@ -8,11 +8,32 @@ def search(T, k, c1, c2):
     """ Algorithm that tries to compute the (k, C1, C2)-cover of T with the minimum number of nodes. The algorithm must
     return None if there are less than k currencies in the tree whose code is between C1 and C2.
 
-    :param T: a 2-8Tree on which to seek the (k, C1, C2)-cover;
+    :param T: a a-bTree on which to seek the (k, C1, C2)-cover;
     :param k: the minimum number of du currency of the coverage;
     :param c1: the left end of the set of the (k, C1, C2)-cover currencies;
     :param c2: the right end of the set of the (k, C1, C2)-cover currencies.
-    :return a list of node of teh coverage, None if coverage not exist."""
+    :return a list of node of teh coverage, None if coverage not exist.
+
+    This greedy algorithm runs in a time that is at most
+
+    .. math::
+        O(\\frac{n^2}{\\log^2{a}} (b - 1))
+
+    The optimal solution, if the tree has nodes in which all the currencies (or all the necessary ones) belong to them,
+    is given by (k/b - 1 rounded up) nodes.
+    The solution given, in the worst case, first sees k nodes where there is only one element of the (k, C1, C2)-cover.
+    So it returns k nodes in the worst case.
+
+    Therefore, the solution of the algorithm differs from the optimal solution of
+
+    .. math::
+        ALG(I) \\ge \\frac{k}{k / (b - 1) \\text{ rounded up}} OPT(I)
+
+    The solution therefore differs a lot when k approaches a multiple of b-1 from the left, while it is much more
+    acceptable in the rest of the cases.
+    Furthermore, the worst case described above is more likely to occur if C1 and C2 are very far from each other,
+    otherwise the probability of obtaining the worst case is much lower.
+    """
     solution = []
     currency_found = 0
 
