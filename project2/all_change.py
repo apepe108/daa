@@ -89,7 +89,7 @@ def all_change(cur: Currency, r: float, max_permutation=1000, only_cents=True) -
 
     # Base case (value zero has just one solution: empty list)
     for i in range(m):
-        T[0][i] = [1, [[]]]
+        T[0][i] = [1, [[0 for _ in range(m)]]]
 
     # Fill rest of the table entries
     for i in range(1, n + 1):
@@ -102,7 +102,8 @@ def all_change(cur: Currency, r: float, max_permutation=1000, only_cents=True) -
                 k = 0
                 while len(T[i][j][1]) < max_permutation and k < len(T[i - S[j]][j][1]):
                     sol = T[i - S[j]][j][1][k]
-                    T[i][j][1].append(sol[:] + [S[j]])
+                    T[i][j][1].append(sol[:])
+                    T[i][j][1][-1][j] += 1
                     k += 1
 
             # Count of solutions excluding S[j]
@@ -118,13 +119,6 @@ def all_change(cur: Currency, r: float, max_permutation=1000, only_cents=True) -
 
             # total count
             T[i][j][0] = x + y
-
-    # reconvert result in initial value
-    if not only_cents:
-        for i in range(len(T[-1][-1][1])):
-            sol = T[-1][-1][1][i]
-            for j in range(len(sol)):
-                sol[j] = _int2float(sol[j])
 
     return T[-1][-1]
 
@@ -190,21 +184,13 @@ def all_change_bottom_up(cur: Currency, r: float, max_permutation=1000, only_cen
     # introducing convenient notation working in cents
     m = cur.num_denominations()
     n = _float2int(r) if not only_cents else r
-
-    # use reverse getting some in between shortest sequence for canonical currency (all active currency are canonical).
-    # This works because, proposing the coins on the contrary, you go every time to fill the solutions for which there
-    # were no coins in the previous iteration.
-    #
-    # PLEASE NOTE: the shortest sequences are not always returned, for that there is the change function in the project1
-    # package, but you avoid returning sequences formed by minimum currency to make them more understandable.
-    S = [_float2int(x) for x in cur.iter_denominations(reverse=True)] \
-        if not only_cents else [_ for _ in cur.iter_denominations(reverse=True)]
+    S = [_ for _ in cur.iter_denominations()] if only_cents else [_float2int(x) for x in cur.iter_denominations()]
 
     # Construct table
     T = [[0, []] for _ in range(n + 1)]
 
     # Base case (value zero has just one solution: empty list)
-    T[0] = [1, [[]]]
+    T[0] = [1, [[0 for _ in range(m)]]]
 
     # Pick all coins one by one and update the T[] values after the index greater than or equal to the value of the
     # picked coin
@@ -217,15 +203,9 @@ def all_change_bottom_up(cur: Currency, r: float, max_permutation=1000, only_cen
             k = 0
             while len(T[j][1]) < max_permutation and k < len(T[j - S[i]][1]):
                 sol = T[j - S[i]][1][k]
-                T[j][1].append(sol[:] + [S[i]])
+                T[j][1].append(sol[:])
+                T[j][1][-1][i] += 1
                 k += 1
-
-    # reconvert result in float value
-    if not only_cents:
-        for i in range(len(T[n][1])):
-            sol = T[n][1][i]
-            for j in range(len(sol)):
-                sol[j] = _int2float(sol[j])
 
     return T[n]
 
@@ -245,7 +225,7 @@ if __name__ == '__main__':
     c.add_denomination(20)
     c.add_denomination(50)
 
-    value = 0.08
+    value = 2
 
     cent = Currency('CEN')
     cent.add_denomination(1)
