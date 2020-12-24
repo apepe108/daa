@@ -37,7 +37,7 @@ def all_change_number_only(cur: Currency, r: float, only_cents=True) -> int:
 
     # introducing convenient notation working in cents
     m = cur.num_denominations()
-    S = [_float2int(x) for x in cur.iter_denominations()] if not only_cents else [_ for _ in cur.iter_denominations()]
+    S = [_ for _ in cur.iter_denominations()] if only_cents else [_float2int(x) for x in cur.iter_denominations()]
     n = _float2int(r) if not only_cents else r
 
     # Construct table
@@ -81,7 +81,7 @@ def all_change(cur: Currency, r: float, max_permutation=1000, only_cents=True) -
 
     # introducing convenient notation working in cents
     m = cur.num_denominations()
-    S = [_float2int(x) for x in cur.iter_denominations()] if not only_cents else [_ for _ in cur.iter_denominations()]
+    S = [_ for _ in cur.iter_denominations()] if only_cents else [_float2int(x) for x in cur.iter_denominations()]
     n = _float2int(r) if not only_cents else r
 
     # Construct table
@@ -143,7 +143,7 @@ def all_change_number_only_bottom_up(cur: Currency, r: float, only_cents=True) -
 
     # introducing convenient notation working in cents
     m = cur.num_denominations()
-    S = [_float2int(x) for x in cur.iter_denominations()] if not only_cents else [_ for _ in cur.iter_denominations()]
+    S = [_ for _ in cur.iter_denominations()] if only_cents else [_float2int(x) for x in cur.iter_denominations()]
     n = _float2int(r) if not only_cents else r
 
     # Construct table
@@ -210,6 +210,30 @@ def all_change_bottom_up(cur: Currency, r: float, max_permutation=1000, only_cen
     return T[n]
 
 
+def print_sequence(c, sequence, only_cent):
+    S = [_ for _ in c.iter_denominations()]
+    first = True
+
+    print('(', end='')
+    for i in range(len(sequence)):
+        if sequence[i] != 0:
+            if only_cent:
+                print(', {} x {}'.format(sequence[i], S[i]) if not first else '{} x {}'.format(
+                    sequence[i], S[i]), end='')
+            else:
+                print(', {} x {:.2f}'.format(sequence[i], S[i]) if not first else '{} x {:.2f}'.format(
+                    sequence[i], S[i]), end='')
+            first = False
+
+    print(') ', end='')
+
+
+def print_result(c, result, only_cent=True):
+    print('{}, '.format(result[0]), end='')
+    for sequence in result[1]:
+        print_sequence(c, sequence, only_cent)
+
+
 if __name__ == '__main__':
     c = Currency('EUR')
     c.add_denomination(0.01)
@@ -246,14 +270,18 @@ if __name__ == '__main__':
     with open('output_all_change.txt', 'w') as f:
         sys.stdout = f  # Change the standard output to the file we created.
 
-        print('\n\nvalue {} -> {}'.format(value, all_change(c, value, only_cents=False)))
         print('\n\nvalue {} -> {}'.format(value, all_change_number_only(c, value, only_cents=False)))
+        print('\nvalue {} -> '.format(value), end='')
+        print_result(c, all_change(c, value, only_cents=False))
         print('\n\nvalue {} -> {}'.format(value, all_change_number_only_bottom_up(c, value, only_cents=False)))
-        print('\n\nvalue {} -> {}'.format(value, all_change_bottom_up(c, value, only_cents=False)))
+        print('\nvalue {} -> '.format(value), end='')
+        print_result(c, all_change_bottom_up(c, value, only_cents=False))
 
-        print('\n\nvalue {} -> {}'.format(_float2int(value), all_change(cent, _float2int(value))))
         print('\n\nvalue {} -> {}'.format(_float2int(value), all_change_number_only(cent, _float2int(value))))
+        print('\nvalue {} -> '.format(_float2int(value)), end='')
+        print_result(cent, all_change(cent, _float2int(value)))
         print('\n\nvalue {} -> {}'.format(_float2int(value), all_change_number_only_bottom_up(cent, _float2int(value))))
-        print('\n\nvalue {} -> {}'.format(_float2int(value), all_change_bottom_up(cent, _float2int(value))))
+        print('\nvalue {} -> '.format(_float2int(value)), end='')
+        print_result(cent, all_change_bottom_up(cent, _float2int(value)))
 
         sys.stdout = original_stdout  # Reset the standard output to its original value
