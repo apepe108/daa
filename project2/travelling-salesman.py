@@ -29,25 +29,17 @@ def _create_graph(set_currencies):
     return g, V
 
 
-def _safe(g, hc, curr):
+def _safe(hc, curr):
     """Check if this vertex is an adjacent vertex of the previously added vertex and is not included in the path
     earlier.
 
-    :param g: the graph where to look for a Hamiltonian cycle;
     :param hc: the current Hamiltonian path;
     :param curr: the node to be evaluated;
     :return true if safe, otherwise false."""
     # If path is empty every vertex is good
-    if len(hc) == 0:
-        return True
-
-    # Check if current vertex and last vertex in path are adjacent
-    if g.get_edge(hc[-1], curr) is None:
-        return False
-
     # Check if current vertex not already in path
-    if curr in hc:
-        return False
+    if len(hc) != 0 or curr in hc:
+        return True
 
     return True
 
@@ -57,8 +49,10 @@ def _random_hamiltonian(g, curr, hc=None, cost=0):
 
     :param g: the graph where to look for a Hamiltonian cycle.
     :param hc: the hamiltonian cycle path.
-    :return: True and one of the possible Hamiltonian cycles if it exists, otherwise False and an not consistent
-    path."""
+    :returns: True if an Hamiltonian cycles exists, otherwise False;
+    :returns: a list of vertex representing the path;
+    :returns: the solution cost;
+    """
     # By default, the cycle is evaluated from the beginning.
     if hc is None:
         hc = [curr]
@@ -68,12 +62,12 @@ def _random_hamiltonian(g, curr, hc=None, cost=0):
     # make a cycle
     if g.vertex_count() == len(hc):
         e = g.get_edge(hc[0], hc[-1])
-        return e is not None, hc, cost + e.element()
+        return e is not None, hc, cost + e.element() if e is not None else cost
 
     # Try different vertices as a next candidate in Hamiltonian Cycle
     for e in g.incident_edges(curr):
         o = e.opposite(curr)  # for each adjacent vertex
-        if _safe(g, hc, o):
+        if _safe(hc, o):
             hc.append(o)
 
             # Start recurs
