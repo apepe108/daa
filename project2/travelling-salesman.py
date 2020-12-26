@@ -29,21 +29,6 @@ def _create_graph(set_currencies):
     return g, V
 
 
-def _safe(hc, curr):
-    """Check if this vertex is an adjacent vertex of the previously added vertex and is not included in the path
-    earlier.
-
-    :param hc: the current Hamiltonian path;
-    :param curr: the node to be evaluated;
-    :return true if safe, otherwise false."""
-    # If path is empty every vertex is good
-    # Check if current vertex not already in path
-    if len(hc) != 0 or curr in hc:
-        return True
-
-    return True
-
-
 def _random_hamiltonian(g, curr, hc=None, cost=0):
     """Given a graph, it returns one of the possible Hamiltonian cycles if it exists.
 
@@ -67,7 +52,7 @@ def _random_hamiltonian(g, curr, hc=None, cost=0):
     # Try different vertices as a next candidate in Hamiltonian Cycle
     for e in g.incident_edges(curr):
         o = e.opposite(curr)  # for each adjacent vertex
-        if _safe(hc, o):
+        if o not in hc:
             hc.append(o)
 
             # Start recurs
@@ -88,7 +73,6 @@ def excange_tour(C):
     g, V = _create_graph(C)
 
     hc = _random_hamiltonian(g, random.choice(list(V.values())))
-
     print(hc)
 
 
