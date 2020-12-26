@@ -67,13 +67,46 @@ def _random_hamiltonian(g, curr, hc=None, cost=0):
     return False, hc, cost
 
 
+def _hamiltonian_brute_force(g, curr=None, hc=None, cost=0):
+    """Given a graph, it returns a generator of all hamiltonian cycle."""
+    if curr is None:
+        curr = random.choice(list(g.vertices()))
+
+    # By default, the cycle is evaluated from the beginning.
+    if hc is None:
+        hc = [curr]
+
+    # Try different vertices as a next candidate in Hamiltonian Cycle
+    for e in g.incident_edges(curr):
+        o = e.opposite(curr)  # for each adjacent vertex
+        if o not in hc:
+            hc.append(o)
+
+            # base case: if all vertices are included in the path Last vertex must be adjacent to the first vertex in
+            # path to make a cycle
+            if g.vertex_count() == len(hc):
+                ce = g.get_edge(hc[0], hc[-1])
+                if ce is not None:
+                    yield hc + [hc[0]], round(cost + e.element() + ce.element(), 10)
+            else:
+                # Start recurs
+                for res in _hamiltonian_brute_force(g, o, hc, cost + e.element()):
+                    yield res
+
+            # remove the current currency and try with another
+            hc.pop()
+
+
 def excange_tour(C):
     """Design a local search algorithm that takes in input a set of Currency objects and looks for
     an exchange tour of minimal rate."""
     g, V = _create_graph(C)
 
-    hc = _random_hamiltonian(g, random.choice(list(V.values())))
-    print(hc)
+    min_cost = min_cycle = None
+    for hc in _hamiltonian_brute_force(g):
+        if min_cost is None or hc[1] < min_cost:
+            min_cycle, min_cost = hc
+    return min_cycle, min_cost
 
 
 if __name__ == '__main__':
@@ -101,4 +134,4 @@ if __name__ == '__main__':
     jpy.add_change('USD', 0.43)
     jpy.add_change('CNY', 0.11)
 
-    excange_tour({usd, gbp, eur, cny, jpy})
+    print(excange_tour({usd, gbp, eur, cny, jpy}))
