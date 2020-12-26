@@ -45,6 +45,7 @@ def _reconstruct_cycle(g, s, V, P):
         cycle.append(curr.element())
         prev = P[curr]
         earn += g.get_edge(prev, curr).element()
+        earn = round(earn, 10)
         curr = prev
 
     cycle.append(curr.element())
@@ -54,6 +55,7 @@ def _reconstruct_cycle(g, s, V, P):
     while cycle[-1] is not curr.element():
         rem = cycle.pop()
         earn -= g.get_edge(V[cycle[-1].code()], V[rem.code()]).element()
+        earn = round(earn, 10)
 
     if s in cycle:
         # if starting currency is in the cycle
@@ -65,16 +67,17 @@ def _reconstruct_cycle(g, s, V, P):
         earn_go_back = g.get_edge(V[cycle[-1].code()], V[s.code()]).element()
         move_earn = earn_go_back + earn_go_to_cycle
 
-        k = 0
-        while move_earn + k * earn > 0:
-            k += 1
+        k = round(- move_earn // earn + 1)
+        print(k, earn, move_earn)
 
         new_cycle = [s]
         if k > 1:
-            new_cycle += (k-1) * cycle[:-1]
+            new_cycle += (k - 1) * cycle[:-1]
             new_cycle += cycle
-        else:
-            new_cycle += (k * cycle)
+        elif k <= 0:
+            new_cycle.append(cycle[0])
+        else:  # k = 1
+            new_cycle += cycle
         new_cycle.append(s)
         return new_cycle, round(k * earn + earn_go_to_cycle + earn_go_back, 10)
 
