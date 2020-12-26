@@ -79,6 +79,9 @@ class Graph:
     def __str__(self):
       return '({0},{1},{2})'.format(self._origin,self._destination,self._element)
 
+    def __repr__(self):
+      return str(self)
+
   #------------------------- Graph methods -------------------------
   def __init__(self, directed=False):
     """Create an empty graph (undirected, by default).
