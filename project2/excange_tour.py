@@ -29,44 +29,6 @@ def _create_graph(set_currencies):
     return g, V
 
 
-def _random_hamiltonian(g, curr, hc=None, cost=0):
-    """Given a graph, it returns one of the possible Hamiltonian cycles if it exists.
-
-    :param g: the graph where to look for a Hamiltonian cycle.
-    :param hc: the hamiltonian cycle path.
-    :returns: True if an Hamiltonian cycles exists, otherwise False;
-    :returns: a list of vertex representing the path;
-    :returns: the solution cost;
-    """
-    # By default, the cycle is evaluated from the beginning.
-    if hc is None:
-        hc = [curr]
-        return _random_hamiltonian(g, curr, hc, cost)
-
-    # base case: if all vertices are included in the path Last vertex must be adjacent to the first vertex in path to
-    # make a cycle
-    if g.vertex_count() == len(hc):
-        e = g.get_edge(hc[0], hc[-1])
-        return e is not None, hc, cost + e.element() if e is not None else cost
-
-    # Try different vertices as a next candidate in Hamiltonian Cycle
-    for e in g.incident_edges(curr):
-        o = e.opposite(curr)  # for each adjacent vertex
-        if o not in hc:
-            hc.append(o)
-
-            # Start recurs
-            res = _random_hamiltonian(g, o, hc, cost + e.element())
-
-            if res[0]:  # if solution found
-                return res
-            else:  # remove the current currency and try with another
-                hc.pop()
-
-    # Fail case
-    return False, hc, cost
-
-
 def _hamiltonian_brute_force(g, curr=None, hc=None, cost=0):
     """Given a graph, it returns a generator of all hamiltonian cycle."""
     if curr is None:
@@ -97,8 +59,8 @@ def _hamiltonian_brute_force(g, curr=None, hc=None, cost=0):
             hc.pop()
 
 
-def excange_tour(C):
-    """Design a local search algorithm that takes in input a set of Currency objects and looks for
+def excange_tour_brute_force(C):
+    """A local search algorithm that takes in input a set of Currency objects and looks for
     an exchange tour of minimal rate."""
     g, V = _create_graph(C)
 
@@ -107,6 +69,94 @@ def excange_tour(C):
         if min_cost is None or hc[1] < min_cost:
             min_cycle, min_cost = hc
     return min_cycle, min_cost
+
+
+def _random_hamiltonian(g, curr=None, hc=None, cost=0):
+    """Given a graph, it returns one of the possible Hamiltonian cycles if it exists.
+
+    :param g: the graph where to look for a Hamiltonian cycle.
+    :param hc: the hamiltonian cycle path.
+    :returns: True if an Hamiltonian cycles exists, otherwise False;
+    :returns: a list of vertex representing the path;
+    :returns: the solution cost;
+    """
+    # By default, the cycle is evaluated from the beginning, starting from a random node.
+    if hc is None:
+        if curr is None:
+            curr = random.choice(list(g.vertices()))
+        hc = [curr]
+        return _random_hamiltonian(g, curr, hc, cost)
+
+    # base case: if all vertices are included in the path Last vertex must be adjacent to the first vertex in path to
+    # make a cycle
+    if g.vertex_count() == len(hc):
+        e = g.get_edge(hc[0], hc[-1])
+        return e is not None, hc + [hc[0]], cost + e.element() if e is not None else cost
+
+    # Try different vertices as a next candidate in Hamiltonian Cycle
+    for e in g.incident_edges(curr):
+        o = e.opposite(curr)  # for each adjacent vertex
+        if o not in hc:
+            hc.append(o)
+
+            # Start recurs
+            res = _random_hamiltonian(g, o, hc, cost + e.element())
+
+            if res[0]:  # if solution found
+                return res
+            else:  # remove the current currency and try with another
+                hc.pop()
+
+    # Fail case
+    return False, hc, cost
+
+
+def excange_tour(C):
+    """A local search algorithm that takes in input a set of Currency objects and looks for
+    an exchange tour of minimal rate."""
+    g, V = _create_graph(C)
+
+    found, hc, cost = _random_hamiltonian(g)
+    if not found:
+        return None
+
+    edited = True
+    while edited:
+        edited, hc, cost = _2opt(g, hc, cost)
+
+    return hc, cost
+
+
+def _2opt(g, hc, cost):
+    edited = False
+    print('start:   ', hc)
+
+    # for each excangable 2opt moves
+    for i in range(len(hc) - 3):
+
+        # The idea is the following:
+        # unconnect hc[i] - hc[i+1] and hc[i+2] - hc[i+3]
+        # try to reconnect hc[i] - hc[i+3] and hc[i+1] - hc[i+2], if it's possible and if the solution is better
+        #
+        # .. hc[i]       hc[i+2]                 .. hc[i]    -   hc[i+2]
+        #             x     |         ---->                         |
+        # .. hc[i+3]     hc[i+1]                 .. hc[i+3]  -   hc[i+1]
+
+        old_e1, old_e2 = g.get_edge(hc[i], hc[i + 1]), g.get_edge(hc[i + 2], hc[i + 3])
+        new_e1, new_e2 = g.get_edge(hc[i], hc[i + 2]), g.get_edge(hc[i + 1], hc[i + 3])
+
+        # verify existance of edge ...
+        if new_e1 is not None and new_e2 is not None:
+            # ...and, in the case, if it's a better solution.
+            old_w = old_e1.element() + old_e2.element()
+            new_w = new_e1.element() + new_e2.element()
+            if old_w > new_w:
+                edited = True
+                cost = cost - old_w + new_w
+                hc[i + 1], hc[i + 2] = hc[i + 2], hc[i + 1]
+                print(i, ':  ', hc)
+
+    return edited, hc, cost
 
 
 if __name__ == '__main__':
@@ -134,4 +184,5 @@ if __name__ == '__main__':
     jpy.add_change('USD', 0.43)
     jpy.add_change('CNY', 0.11)
 
-    print(excange_tour({usd, gbp, eur, cny, jpy}))
+    print(excange_tour_brute_force({usd, gbp, eur, cny, jpy}))
+    print('\n', excange_tour({usd, gbp, eur, cny, jpy}))
