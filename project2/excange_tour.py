@@ -3,6 +3,8 @@ import random
 from TdP_collections.graphs.graph import Graph
 from project1.currency import Currency
 
+from datetime import datetime
+
 
 def _create_graph(set_currencies):
     """Given a set of currency, it returns a graph that represents all the exchange possibilities.
@@ -26,6 +28,7 @@ def _create_graph(set_currencies):
             if g.get_edge(vert, V[change]) is None:
                 g.insert_edge(vert, V[change], cur.get_change(change))
 
+    print('created', datetime.now())
     return g, V
 
 
@@ -117,6 +120,7 @@ def excange_tour(C):
     g, V = _create_graph(C)
 
     found, hc, cost = _random_hamiltonian(g)
+    print('founded first', datetime.now())
     if not found:
         return None
 
@@ -128,6 +132,16 @@ def excange_tour(C):
 
 
 def _2_3opt(g, hc, cost):
+    """Call the 2 opt algorithm until you get a 2opt-optimal solution, then call the 3-opt algorithm until you get an
+    optimal 3-opt solution. If there are no more improvements, it re-executes on the rotated cycle and, if there are no
+    improvements here, it returns the cycle found and its cost.
+
+    :param g: the graph on which to search for the minimum Hamiltonian cycle;
+    :param hc: the starting Hamiltonian cycle;
+    :param cost: the cost of the starting cycle.
+    :returns: a boolean indicating whether the algorithm has found a better solution; the new cycle if improved,
+    otherwise the same input data; the cost of the new cycle if improved, otherwise the cost given as input."""
+
     cnt = 0
     edited = False
 
@@ -147,16 +161,23 @@ def _2_3opt(g, hc, cost):
 
 
 def _2opt(g, hc, cost):
-    # DEBUG PRINT
-    print('\tstart 2opt:   ', hc)
+    """The idea is the following:
+    1) disconnect hc[i] - hc[i+1] and hc[j] - hc[j+1];
+    2) try to reconnect hc[i] - hc[j] and hc[i+1] - hc[j+1], if it's possible and if the solution is better.
 
-    # The idea is the following:
-    # unconnect hc[i] - hc[i+1] and hc[j] - hc[j+1]
-    # try to reconnect hc[i] - hc[j] and hc[i+1] - hc[j+1], if it's possible and if the solution is better
-    #
-    # ..  hc[i]       hc[j]                  ..  hc[i]   -    hc[j]
-    #             x     |         ---->                         |
-    # .. hc[j+1]     hc[i+1]                 .. hc[j+1]  -   hc[i+1]
+    A graphical representation is as follows:
+
+        1..  hc[i]       hc[j]                  1..  hc[i]   -    hc[j]
+                     x     |         ---->                          |
+        2.. hc[j+1]     hc[i+1]                 2.. hc[j+1]  -   hc[i+1]
+
+    :param g: the graph on which to search for the minimum Hamiltonian cycle;
+    :param hc: the starting Hamiltonian cycle;
+    :param cost: the cost of the starting cycle.
+    :returns: a boolean indicating whether the algorithm has found a better solution; the new cycle if improved,
+    otherwise the same input data; the cost of the new cycle if improved, otherwise the cost given as input."""
+
+    print('\tstart 2opt:   ', hc)  # --------------------------------------------------------------------- DEBUG PRINT
 
     edited = False
 
@@ -173,38 +194,41 @@ def _2opt(g, hc, cost):
                 old_w = round(old_e1.element() + old_e2.element(), 10)
                 new_w = round(new_e1.element() + new_e2.element(), 10)
 
-                # DEBUG PRINT
-                print('\t\told {}, new {}'.format(old_w, new_w))
+                print('\t\told {}, new {}'.format(old_w, new_w))  # -------------------------------------- DEBUG PRINT
 
                 if old_w > new_w:
                     edited = True
                     cost = round(cost - old_w + new_w, 10)
                     hc[i + 1:j + 1] = hc[j:i:-1]
 
-                    # DEBUG PRINT
-                    print('\t\t\t', 'i:', i, 'j:', j, '\n\t\t\tr -> ', hc)
+                    print('\t\t\t', 'i:', i, 'j:', j, '\n\t\t\tr -> ', hc)  # ---------------------------- DEBUG PRINT
 
     return edited, hc, cost
 
 
 def _3opt(g, hc, cost):
-    # DEBUG PRINT
-    print('\tstart 3opt:   ', hc)
+    """The idea is the following:
+    We do not want to use the 3 opt in its totality as a complexity O(n^3) would not be very acceptable, therefore,
+    considering to run it only after the 2opt termination, we only take into account the 3opt cases, and in the case of
+    large sequences for a limited length.
 
-    # The idea is the following:
-    # We do not want to use the 3 opt in its totality as a complexity O(n^3) would not be very acceptable, therefore,
-    # considering to run it only after the 2opt termination, we only take into account the 3opt cases, in the case of
-    # large sequences for a limited length.
-    #
-    # 1..  _   hc[i]   _  hc[j]    _  hc[k]                   1..  -  hc[i]  __    hc[j] __    hc[k] _
-    #           |    _/     |    _/     |              -->                     \__   |     \__   |    \
-    #        hc[i+1]     hc[j+1]     hc[k+1]  - ..2           2..  -  hc[i+1]     hc[j+1]     hc[k+1]  \
-    #                                                                    \______________________________\
-    #
-    # 1..  _   hc[i]   _  hc[j]    _  hc[k]                   1..  -  hc[i]        hc[j]   -   hc[k]
-    #           |    _/     |    _/     |              -->                     \           /
-    #        hc[i+1]     hc[j+1]     hc[k+1]  - ..2                   hc[i+1]     hc[j+1]     hc[k+1]  - ..2
-    #                                                                    \_______________________|
+        1..  _   hc[i]      hc[j]       hc[k]                   1..  -   hc[i]       hc[j]       hc[k] _
+                  |     /     |     /     |              -->                     \     |     \     |    \
+               hc[i+1]     hc[j+1]     hc[k+1]  - ..2           2..  -  hc[i+1]     hc[j+1]     hc[k+1]  \
+                                                                           \______________________________\
+
+        1..  _   hc[i]      hc[j]       hc[k]                   1..  -   hc[i]       hc[j]   -   hc[k]
+                  |     /     |     /     |              -->                     x           /
+               hc[i+1]     hc[j+1]     hc[k+1]  - ..2                   hc[i+1]     hc[j+1]     hc[k+1]  - ..2
+                                                                           \_______________________|
+
+    :param g: g: the graph on which to search for the minimum Hamiltonian cycle;
+    :param hc: the starting Hamiltonian cycle;
+    :param cost: the cost of the starting cycle.
+    :returns: a boolean indicating whether the algorithm has found a better solution; the new cycle if improved,
+    otherwise the same input data; the cost of the new cycle if improved, otherwise the cost given as input."""
+
+    print('\tstart 3opt:   ', hc)  # --------------------------------------------------------------------- DEBUG PRINT
 
     edited = False
 
@@ -233,24 +257,21 @@ def _3opt(g, hc, cost):
                     old_w = round(old_e1.element() + old_e2.element() + old_e3.element(), 10)
                     new_w = round(new_e1.element() + new_e2.element() + new_e3.element(), 10)
 
-                    # DEBUG PRINT
-                    print('\t\tsx old {}, new {}'.format(old_w, new_w))
+                    print('\t\tsx old {}, new {}'.format(old_w, new_w))  # ------------------------------- DEBUG PRINT
 
                     if old_w > new_w:
                         edited = True
                         cost = round(cost - old_w + new_w, 10)
                         hc[i + 1:k + 1] = hc[j + 1:k + 1] + hc[i + 1:j + 1]
 
-                        # DEBUG PRINT
-                        print('\t\t\t', 'i:', i, 'j:', j, 'k:', k, '\n\t\t\tr -> ', hc)
+                        print('\t\t\t', 'i:', i, 'j:', j, 'k:', k, '\n\t\t\tr -> ', hc)  # --------------- DEBUG PRINT
 
                 elif new_e4 is not None and new_e5 is not None and new_e6 is not None:
                     # ...and, in the case, if it's a better solution.
                     old_w = round(old_e1.element() + old_e2.element() + old_e3.element(), 10)
                     new_w = round(new_e4.element() + new_e5.element() + new_e6.element(), 10)
 
-                    # DEBUG PRINT
-                    print('\t\tdx old {}, new {}'.format(old_w, new_w))
+                    print('\t\tdx old {}, new {}'.format(old_w, new_w))  # ------------------------------- DEBUG PRINT
 
                     if old_w > new_w:
                         print('\t\t', new_e4, new_e5, new_e6)
@@ -259,13 +280,18 @@ def _3opt(g, hc, cost):
                         hc[i + 1:k + 1] = hc[j + 1:k + 1] + hc[j:i:-1]
 
                         # DEBUG PRINT
-                        print('\t\t\t', 'i:', i, 'j:', j, 'k:', k, '\n\t\t\tr -> ', hc)
+                        print('\t\t\t', 'i:', i, 'j:', j, 'k:', k, '\n\t\t\tr -> ', hc)  # --------------- DEBUG PRINT
 
     return edited, hc, cost
 
 
-def _rotate(hc):
-    return hc[5:] + hc[:5]
+def _rotate(hc, item=5):
+    """rotate the solution found by 'item' nodes, leaving the solution unchanged.
+
+    :param hc: the Hamiltonian cycle represented with a list of vertex;
+    :param item: the number of item to rotate;
+    :return: the rotated Hamiltonian cycle."""
+    return hc[item:] + hc[:item]
 
 
 def _populate_graph1():
@@ -383,7 +409,6 @@ def _populate_graph2():
 
 
 def _populate_graph3():
-
     aed = Currency('AED')
     aed.add_change('AFN', 0.10)
     aed.add_change('ALL', 0.20)
@@ -396,12 +421,12 @@ def _populate_graph3():
     afn.add_change('ANG', 0.90)
     afn.add_change('AWG', 0.60)
 
-    all = Currency('ALL')
-    all.add_change('AMD', 0.30)
-    all.add_change('AED', 0.20)
-    all.add_change('AWG', 0.80)
-    all.add_change('AZN', 0.31)
-    all.add_change('BDT', 0.08)
+    all_ = Currency('ALL')
+    all_.add_change('AMD', 0.30)
+    all_.add_change('AED', 0.20)
+    all_.add_change('AWG', 0.80)
+    all_.add_change('AZN', 0.31)
+    all_.add_change('BDT', 0.08)
 
     amd = Currency('AMD')
     amd.add_change('AWG', 0.70)
@@ -660,27 +685,35 @@ def _populate_graph3():
     dzd.add_change('CNY', 0.83)
     dzd.add_change('CLP', 0.45)
 
-    return {aed, afn, all, amd, ang, aoa, ars, aud, awg, azn, bam, bbd, bdt, bgn, bhd, bif, bmd, bnd, bob, bov, brl,
+    return {aed, afn, all_, amd, ang, aoa, ars, aud, awg, azn, bam, bbd, bdt, bgn, bhd, bif, bmd, bnd, bob, bov, brl,
             bsd, btn, bwp, byn, bzd, cad, cdf, che, chf, chw, clf, clp, cny, cop, cou, crc, cuc, cup, cve, czk, djf,
             dkk, dop, dzd}
-
 
 
 if __name__ == '__main__':
     print('-------- GRAPH 1 -----------------')
     print('\n1)  Brute force:')
     print(excange_tour_brute_force(_populate_graph1()))
+    print('end', datetime.now())
+
     print('\n2)  Local Search:')
     print(excange_tour(_populate_graph1()))
+    print('end', datetime.now())
 
     print('\n\n------------ GRAPH 2 -----------------')
     print('\n1)  Brute force:')
     print(excange_tour_brute_force(_populate_graph2()))
+    print('end', datetime.now())
+
     print('\n2)  Local Search:')
     print(excange_tour(_populate_graph2()))
+    print('end', datetime.now())
 
     print('\n\n------------ GRAPH 3 -----------------')
-    print('\n1)  Brute force:')
-    print(excange_tour_brute_force(_populate_graph3()))
-    print('\n2)  Local Search:')
-    print(excange_tour(_populate_graph3()))
+    # print('\n1)  Brute force:')
+    # print(excange_tour_brute_force(_populate_graph3()))
+    # print('end', datetime.now())
+
+    # print('\n2)  Local Search:', datetime.now())
+    # print(excange_tour(_populate_graph3()))
+    # print('end', datetime.now())
