@@ -74,7 +74,24 @@ def excange_tour_brute_force(C):
     return min_cycle, min_cost
 
 
-def _random_hamiltonian(g, curr=None, hc=None, cost=0):
+def excange_tour(C):
+    """A local search algorithm that takes in input a set of Currency objects and looks for
+    an exchange tour of minimal rate."""
+    g, V = _create_graph(C)
+
+    found, hc, cost = _backtracking_random_hamiltonian(g)
+    print('founded first', datetime.now())
+    if not found:
+        return None
+
+    edited = True
+    while edited:
+        edited, hc, cost = _2_3opt(g, hc, cost)
+
+    return hc, cost
+
+
+def _backtracking_random_hamiltonian(g, curr=None, hc=None, cost=0):
     """Given a graph, it returns one of the possible Hamiltonian cycles if it exists.
 
     :param g: the graph where to look for a Hamiltonian cycle.
@@ -88,7 +105,7 @@ def _random_hamiltonian(g, curr=None, hc=None, cost=0):
         if curr is None:
             curr = random.choice(list(g.vertices()))
         hc = [curr]
-        return _random_hamiltonian(g, curr, hc, cost)
+        return _backtracking_random_hamiltonian(g, curr, hc, cost)
 
     # base case: if all vertices are included in the path Last vertex must be adjacent to the first vertex in path to
     # make a cycle
@@ -103,7 +120,7 @@ def _random_hamiltonian(g, curr=None, hc=None, cost=0):
             hc.append(o)
 
             # Start recurs
-            res = _random_hamiltonian(g, o, hc, round(cost + e.element(), 10))
+            res = _backtracking_random_hamiltonian(g, o, hc, round(cost + e.element(), 10))
 
             if res[0]:  # if solution found
                 return res
@@ -112,23 +129,6 @@ def _random_hamiltonian(g, curr=None, hc=None, cost=0):
 
     # Fail case
     return False, hc, cost
-
-
-def excange_tour(C):
-    """A local search algorithm that takes in input a set of Currency objects and looks for
-    an exchange tour of minimal rate."""
-    g, V = _create_graph(C)
-
-    found, hc, cost = _random_hamiltonian(g)
-    print('founded first', datetime.now())
-    if not found:
-        return None
-
-    edited = True
-    while edited:
-        edited, hc, cost = _2_3opt(g, hc, cost)
-
-    return hc, cost
 
 
 def _2_3opt(g, hc, cost):
