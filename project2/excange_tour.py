@@ -91,7 +91,7 @@ def _random_hamiltonian(g, curr=None, hc=None, cost=0):
     # make a cycle
     if g.vertex_count() == len(hc):
         e = g.get_edge(hc[0], hc[-1])
-        return e is not None, hc + [hc[0]], cost + e.element() if e is not None else cost
+        return e is not None, hc + [hc[0]], round(cost + e.element(), 10) if e is not None else cost
 
     # Try different vertices as a next candidate in Hamiltonian Cycle
     for e in g.incident_edges(curr):
@@ -100,7 +100,7 @@ def _random_hamiltonian(g, curr=None, hc=None, cost=0):
             hc.append(o)
 
             # Start recurs
-            res = _random_hamiltonian(g, o, hc, cost + e.element())
+            res = _random_hamiltonian(g, o, hc, round(cost + e.element(), 10))
 
             if res[0]:  # if solution found
                 return res
@@ -120,9 +120,14 @@ def excange_tour(C):
     if not found:
         return None
 
-    edited = True
-    while edited:
+    cnt = 0
+    while cnt < 3:
         edited, hc, cost = _2opt(g, hc, cost)
+        if edited:
+            cnt = 0
+        else:
+            hc = _rotate(hc)
+            cnt += 1
 
     return hc, cost
 
@@ -148,15 +153,19 @@ def _2opt(g, hc, cost):
         # verify existance of edge ...
         if new_e1 is not None and new_e2 is not None:
             # ...and, in the case, if it's a better solution.
-            old_w = old_e1.element() + old_e2.element()
-            new_w = new_e1.element() + new_e2.element()
+            old_w = round(old_e1.element() + old_e2.element(), 10)
+            new_w = round(new_e1.element() + new_e2.element(), 10)
             if old_w > new_w:
                 edited = True
-                cost = cost - old_w + new_w
+                cost = round(cost - old_w + new_w, 10)
                 hc[i + 1], hc[i + 2] = hc[i + 2], hc[i + 1]
                 print(i, ':  ', hc)
 
     return edited, hc, cost
+
+
+def _rotate(hc):
+    return hc[1:] + [hc[1]]
 
 
 if __name__ == '__main__':
