@@ -122,43 +122,46 @@ def excange_tour(C):
 
     edited = True
     while edited:
-        edited, hc, cost = _2opt_with_rotation(g, hc, cost)
+        edited, hc, cost = _2_3opt(g, hc, cost)
 
     return hc, cost
 
 
-def _2opt_with_rotation(g, hc, cost):
+def _2_3opt(g, hc, cost):
     cnt = 0
     edited = False
 
-    while cnt < 3:
+    while cnt < 2:
         edited, hc, cost = _2opt(g, hc, cost)
         if edited:
             cnt = 0
         else:
-            hc = _rotate(hc)
-            cnt += 1
+            edited, hc, cost = _3opt(g, hc, cost)
+            if edited:
+                cnt = 0
+            else:
+                hc = _rotate(hc)
+                cnt += 1
 
     return edited, hc, cost
 
 
 def _2opt(g, hc, cost):
     # DEBUG PRINT
-    print('start:   ', hc)
+    print('start 2opt:   ', hc)
+
+    # The idea is the following:
+    # unconnect hc[i] - hc[i+1] and hc[j] - hc[j+1]
+    # try to reconnect hc[i] - hc[j] and hc[i+1] - hc[j+1], if it's possible and if the solution is better
+    #
+    # ..  hc[i]       hc[j]                  ..  hc[i]   -    hc[j]
+    #             x     |         ---->                         |
+    # .. hc[j+1]     hc[i+1]                 .. hc[j+1]  -   hc[i+1]
 
     edited = False
 
     # for each excangable 2opt moves
     for i in range(len(hc) - 3):
-
-        # The idea is the following:
-        # unconnect hc[i] - hc[i+1] and hc[i+2] - hc[i+3]
-        # try to reconnect hc[i] - hc[i+3] and hc[i+1] - hc[i+2], if it's possible and if the solution is better
-        #
-        # ..  hc[i]       hc[j]                  ..  hc[i]   -    hc[j]
-        #             x     |         ---->                         |
-        # .. hc[j+1]     hc[i+1]                 .. hc[j+1]  -   hc[i+1]
-
         for j in range(i + 2, len(hc) - 1):
             old_e1, old_e2 = g.get_edge(hc[i], hc[i + 1]), g.get_edge(hc[j], hc[j + 1])
             new_e1, new_e2 = g.get_edge(hc[i], hc[j]), g.get_edge(hc[i + 1], hc[j + 1])
@@ -175,7 +178,55 @@ def _2opt(g, hc, cost):
                     hc[i + 1:j + 1] = hc[j:i:-1]
 
                     # DEBUG PRINT
-                    print('r {}:{} -> '.format(i + 1, j + 1), hc)
+                    print('\t', 'i:', i, 'j:', j, 'r {}:{} -> '.format(i + 1, j + 1), hc)
+
+    return edited, hc, cost
+
+
+def _3opt(g, hc, cost):
+    # DEBUG PRINT
+    print('start 3opt:   ', hc)
+
+    # The idea is the following:
+    # We do not want to use the 3 opt in its totality as a complexity O(n^3) would not be very acceptable, therefore,
+    # considering to run it only after the 2opt termination, we only take into account the 3opt cases, in the case of
+    # large sequences for a limited length.
+    #
+    # ..  _   hc[i]   _  hc[j]    _  hc[k]                ..  -  hc[i]  __    hc[j] __    hc[k] _
+    #          |    _/     |    _/     |           -->                    \__   |     \__   |    \
+    #       hc[i+1]     hc[j+1]     hc[k+1]  ..           ..  -  hc[i+1]     hc[j+1]     hc[k+1]  \
+    #                                                               \______________________________\
+
+    edited = False
+
+    # for each excangable 3opt moves
+    for i in range(len(hc) - 5):
+        for j in range(i + 2, len(hc) - 3):
+            for k in range(j + 2, len(hc) - 1):
+                old_e1 = g.get_edge(hc[i], hc[i + 1])
+                old_e2 = g.get_edge(hc[j], hc[j + 1])
+                old_e3 = g.get_edge(hc[k], hc[k + 1])
+                new_e1 = g.get_edge(hc[i], hc[j + 1])
+                new_e2 = g.get_edge(hc[j], hc[k + 1])
+                new_e3 = g.get_edge(hc[k], hc[i + 1])
+
+                # verify existance of edge ...
+                # old edges exists!
+                if new_e1 is not None and new_e2 is not None and new_e3 is not None:
+                    # ...and, in the case, if it's a better solution.
+                    old_w = round(old_e1.element() + old_e2.element() + old_e3.element(), 10)
+                    new_w = round(new_e1.element() + new_e2.element() + new_e3.element(), 10)
+
+                    # DEBUG PRINT
+                    print('\told {}, new {}'.format(old_w, new_w))
+
+                    if old_w > new_w:
+                        edited = True
+                        cost = round(cost - old_w + new_w, 10)
+                        hc[i + 1:k + 1] = hc[j + 1:k + 1] + hc[i + 1:j + 1]
+
+                        # DEBUG PRINT
+                        print('\t', 'i:', i, 'j:', j, 'k:', k, 'r {}:{} -> '.format(i + 1, j + 1), hc)
 
     return edited, hc, cost
 
