@@ -678,3 +678,9 @@ if __name__ == '__main__':
     print(excange_tour_brute_force(_populate_graph2()))
     print('\n2)  Local Search:')
     print(excange_tour(_populate_graph2()))
+
+    print('\n\n------------ GRAPH 3 -----------------')
+    print('\n1)  Brute force:')
+    print(excange_tour_brute_force(_populate_graph3()))
+    print('\n2)  Local Search:')
+    print(excange_tour(_populate_graph3()))
