@@ -120,7 +120,17 @@ def excange_tour(C):
     if not found:
         return None
 
+    edited = True
+    while edited:
+        edited, hc, cost = _2opt_with_rotation(g, hc, cost)
+
+    return hc, cost
+
+
+def _2opt_with_rotation(g, hc, cost):
     cnt = 0
+    edited = False
+
     while cnt < 3:
         edited, hc, cost = _2opt(g, hc, cost)
         if edited:
@@ -129,12 +139,14 @@ def excange_tour(C):
             hc = _rotate(hc)
             cnt += 1
 
-    return hc, cost
+    return edited, hc, cost
 
 
 def _2opt(g, hc, cost):
-    edited = False
+    # DEBUG PRINT
     print('start:   ', hc)
+
+    edited = False
 
     # for each excangable 2opt moves
     for i in range(len(hc) - 3):
@@ -143,23 +155,27 @@ def _2opt(g, hc, cost):
         # unconnect hc[i] - hc[i+1] and hc[i+2] - hc[i+3]
         # try to reconnect hc[i] - hc[i+3] and hc[i+1] - hc[i+2], if it's possible and if the solution is better
         #
-        # .. hc[i]       hc[i+2]                 .. hc[i]    -   hc[i+2]
+        # ..  hc[i]       hc[j]                  ..  hc[i]   -    hc[j]
         #             x     |         ---->                         |
-        # .. hc[i+3]     hc[i+1]                 .. hc[i+3]  -   hc[i+1]
+        # .. hc[j+1]     hc[i+1]                 .. hc[j+1]  -   hc[i+1]
 
-        old_e1, old_e2 = g.get_edge(hc[i], hc[i + 1]), g.get_edge(hc[i + 2], hc[i + 3])
-        new_e1, new_e2 = g.get_edge(hc[i], hc[i + 2]), g.get_edge(hc[i + 1], hc[i + 3])
+        for j in range(i + 2, len(hc) - 1):
+            old_e1, old_e2 = g.get_edge(hc[i], hc[i + 1]), g.get_edge(hc[j], hc[j + 1])
+            new_e1, new_e2 = g.get_edge(hc[i], hc[j]), g.get_edge(hc[i + 1], hc[j + 1])
 
-        # verify existance of edge ...
-        if new_e1 is not None and new_e2 is not None:
-            # ...and, in the case, if it's a better solution.
-            old_w = round(old_e1.element() + old_e2.element(), 10)
-            new_w = round(new_e1.element() + new_e2.element(), 10)
-            if old_w > new_w:
-                edited = True
-                cost = round(cost - old_w + new_w, 10)
-                hc[i + 1], hc[i + 2] = hc[i + 2], hc[i + 1]
-                print('swap', hc)
+            # verify existance of edge ...
+            # old edges exists!
+            if new_e1 is not None and new_e2 is not None:
+                # ...and, in the case, if it's a better solution.
+                old_w = round(old_e1.element() + old_e2.element(), 10)
+                new_w = round(new_e1.element() + new_e2.element(), 10)
+                if old_w > new_w:
+                    edited = True
+                    cost = round(cost - old_w + new_w, 10)
+                    hc[i + 1:j + 1] = hc[j:i:-1]
+
+                    # DEBUG PRINT
+                    print('r {}:{} -> '.format(i + 1, j + 1), hc)
 
     return edited, hc, cost
 
