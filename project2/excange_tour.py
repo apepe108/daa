@@ -91,7 +91,7 @@ def _random_hamiltonian(g, curr=None, hc=None, cost=0):
     # make a cycle
     if g.vertex_count() == len(hc):
         e = g.get_edge(hc[0], hc[-1])
-        return e is not None, hc + [hc[0]], round(cost + e.element(), 10) if e is not None else cost
+        return e is not None, hc, round(cost + e.element(), 10) if e is not None else cost
 
     # Try different vertices as a next candidate in Hamiltonian Cycle
     for e in g.incident_edges(curr):
@@ -143,12 +143,12 @@ def _2_3opt(g, hc, cost):
                 hc = _rotate(hc)
                 cnt += 1
 
-    return edited, hc, cost
+    return edited, hc + [hc[0]], cost
 
 
 def _2opt(g, hc, cost):
     # DEBUG PRINT
-    print('start 2opt:   ', hc)
+    print('\tstart 2opt:   ', hc)
 
     # The idea is the following:
     # unconnect hc[i] - hc[i+1] and hc[j] - hc[j+1]
@@ -172,30 +172,39 @@ def _2opt(g, hc, cost):
                 # ...and, in the case, if it's a better solution.
                 old_w = round(old_e1.element() + old_e2.element(), 10)
                 new_w = round(new_e1.element() + new_e2.element(), 10)
+
+                # DEBUG PRINT
+                print('\t\told {}, new {}'.format(old_w, new_w))
+
                 if old_w > new_w:
                     edited = True
                     cost = round(cost - old_w + new_w, 10)
                     hc[i + 1:j + 1] = hc[j:i:-1]
 
                     # DEBUG PRINT
-                    print('\t', 'i:', i, 'j:', j, 'r {}:{} -> '.format(i + 1, j + 1), hc)
+                    print('\t\t\t', 'i:', i, 'j:', j, '\n\t\t\tr -> ', hc)
 
     return edited, hc, cost
 
 
 def _3opt(g, hc, cost):
     # DEBUG PRINT
-    print('start 3opt:   ', hc)
+    print('\tstart 3opt:   ', hc)
 
     # The idea is the following:
     # We do not want to use the 3 opt in its totality as a complexity O(n^3) would not be very acceptable, therefore,
     # considering to run it only after the 2opt termination, we only take into account the 3opt cases, in the case of
     # large sequences for a limited length.
     #
-    # ..  _   hc[i]   _  hc[j]    _  hc[k]                ..  -  hc[i]  __    hc[j] __    hc[k] _
-    #          |    _/     |    _/     |           -->                    \__   |     \__   |    \
-    #       hc[i+1]     hc[j+1]     hc[k+1]  ..           ..  -  hc[i+1]     hc[j+1]     hc[k+1]  \
-    #                                                               \______________________________\
+    # 1..  _   hc[i]   _  hc[j]    _  hc[k]                   1..  -  hc[i]  __    hc[j] __    hc[k] _
+    #           |    _/     |    _/     |              -->                     \__   |     \__   |    \
+    #        hc[i+1]     hc[j+1]     hc[k+1]  - ..2           2..  -  hc[i+1]     hc[j+1]     hc[k+1]  \
+    #                                                                    \______________________________\
+    #
+    # 1..  _   hc[i]   _  hc[j]    _  hc[k]                   1..  -  hc[i]        hc[j]   -   hc[k]
+    #           |    _/     |    _/     |              -->                     \           /
+    #        hc[i+1]     hc[j+1]     hc[k+1]  - ..2                   hc[i+1]     hc[j+1]     hc[k+1]  - ..2
+    #                                                                    \_______________________|
 
     edited = False
 
@@ -206,9 +215,16 @@ def _3opt(g, hc, cost):
                 old_e1 = g.get_edge(hc[i], hc[i + 1])
                 old_e2 = g.get_edge(hc[j], hc[j + 1])
                 old_e3 = g.get_edge(hc[k], hc[k + 1])
+
+                # first case
                 new_e1 = g.get_edge(hc[i], hc[j + 1])
                 new_e2 = g.get_edge(hc[j], hc[k + 1])
                 new_e3 = g.get_edge(hc[k], hc[i + 1])
+
+                # second case
+                new_e4 = g.get_edge(hc[i], hc[j + 1])
+                new_e5 = g.get_edge(hc[j], hc[k])
+                new_e6 = g.get_edge(hc[i + 1], hc[k + 1])
 
                 # verify existance of edge ...
                 # old edges exists!
@@ -218,7 +234,7 @@ def _3opt(g, hc, cost):
                     new_w = round(new_e1.element() + new_e2.element() + new_e3.element(), 10)
 
                     # DEBUG PRINT
-                    print('\told {}, new {}'.format(old_w, new_w))
+                    print('\t\tsx old {}, new {}'.format(old_w, new_w))
 
                     if old_w > new_w:
                         edited = True
@@ -226,13 +242,30 @@ def _3opt(g, hc, cost):
                         hc[i + 1:k + 1] = hc[j + 1:k + 1] + hc[i + 1:j + 1]
 
                         # DEBUG PRINT
-                        print('\t', 'i:', i, 'j:', j, 'k:', k, 'r {}:{} -> '.format(i + 1, j + 1), hc)
+                        print('\t\t\t', 'i:', i, 'j:', j, 'k:', k, '\n\t\t\tr -> ', hc)
+
+                elif new_e4 is not None and new_e5 is not None and new_e6 is not None:
+                    # ...and, in the case, if it's a better solution.
+                    old_w = round(old_e1.element() + old_e2.element() + old_e3.element(), 10)
+                    new_w = round(new_e4.element() + new_e5.element() + new_e6.element(), 10)
+
+                    # DEBUG PRINT
+                    print('\t\tdx old {}, new {}'.format(old_w, new_w))
+
+                    if old_w > new_w:
+                        print('\t\t', new_e4, new_e5, new_e6)
+                        edited = True
+                        cost = round(cost - old_w + new_w, 10)
+                        hc[i + 1:k + 1] = hc[j + 1:k + 1] + hc[j:i:-1]
+
+                        # DEBUG PRINT
+                        print('\t\t\t', 'i:', i, 'j:', j, 'k:', k, '\n\t\t\tr -> ', hc)
 
     return edited, hc, cost
 
 
 def _rotate(hc):
-    return hc[1:] + [hc[1]]
+    return hc[5:] + hc[:5]
 
 
 def _populate_graph1():
