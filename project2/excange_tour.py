@@ -298,6 +298,290 @@ def _populate_graph2():
     return {gbp, cny, eur, ils, dop, aed, usd, jod, lab, etb, gip, cad, bdt, jpy}
 
 
+def _populate_graph3():
+
+    aed = Currency('AED')
+    aed.add_change('AFN', 0.10)
+    aed.add_change('ALL', 0.20)
+    aed.add_change('AWG', 0.50)
+
+    afn = Currency('AFN')
+    afn.add_change('AED', 0.10)
+    afn.add_change('AMD', 0.40)
+    afn.add_change('AUD', 0.60)
+    afn.add_change('ANG', 0.90)
+    afn.add_change('AWG', 0.60)
+
+    all = Currency('ALL')
+    all.add_change('AMD', 0.30)
+    all.add_change('AED', 0.20)
+    all.add_change('AWG', 0.80)
+    all.add_change('AZN', 0.31)
+    all.add_change('BDT', 0.08)
+
+    amd = Currency('AMD')
+    amd.add_change('AWG', 0.70)
+    amd.add_change('AFN', 0.40)
+    amd.add_change('ALL', 0.30)
+    amd.add_change('AUD', 0.12)
+    amd.add_change('ARS', 0.48)
+    amd.add_change('AOA', 0.30)
+    amd.add_change('BHD', 0.01)
+    amd.add_change('BAM', 0.06)
+    amd.add_change('BDT', 0.1)
+    amd.add_change('BBD', 0.23)
+
+    ang = Currency('ANG')
+    ang.add_change('AFN', 0.90)
+    ang.add_change('ARS', 0.15)
+    ang.add_change('AOA', 0.43)
+    ang.add_change('AUD', 0.51)
+    ang.add_change('CHF', 0.85)
+
+    aoa = Currency('AOA')
+    aoa.add_change('AMD', 0.30)
+    aoa.add_change('ANG', 0.43)
+    aoa.add_change('ARS', 0.05)
+    aoa.add_change('BGN', 0.43)
+    aoa.add_change('BHD', 0.65)
+    aoa.add_change('CHW', 0.82)
+    aoa.add_change('CLF', 0.99)
+
+    ars = Currency('ARS')
+    ars.add_change('AMD', 0.48)
+    ars.add_change('AUD', 0.24)
+    ars.add_change('AOA', 0.05)
+    ars.add_change('ANG', 0.15)
+
+    aud = Currency('AUD')
+    aud.add_change('AFN', 0.6)
+    aud.add_change('ANG', 0.51)
+    aud.add_change('AMD', 0.12)
+    aud.add_change('ARS', 0.24)
+
+    awg = Currency('AWG')
+    awg.add_change('AED', 0.50)
+    awg.add_change('AFN', 0.60)
+    awg.add_change('AMD', 0.70)
+    awg.add_change('ALL', 0.80)
+
+    azn = Currency('AZN')
+    azn.add_change('ALL', 0.31)
+    azn.add_change('BAM', 0.75)
+    azn.add_change('BBD', 0.03)
+    azn.add_change('BMD', 0.06)
+    azn.add_change('BND', 0.48)
+
+    bam = Currency('BAM')
+    bam.add_change('BGN', 0.31)
+    bam.add_change('AMD', 0.06)
+    bam.add_change('AZN', 0.75)
+    bam.add_change('BBD', 0.95)
+    bam.add_change('BOB', 0.08)
+    bam.add_change('BTN', 0.63)
+
+    bbd = Currency('BBD')
+    bbd.add_change('AZN', 0.03)
+    bbd.add_change('BAM', 0.95)
+    bbd.add_change('AMD', 0.23)
+
+    bdt = Currency('BDT')
+    bdt.add_change('ALL', 0.08)
+    bdt.add_change('AMD', 0.1)
+
+    bgn = Currency('BGN')
+    bgn.add_change('BAM', 0.31)
+    bgn.add_change('AOA', 0.43)
+    bgn.add_change('BHD', 0.03)
+    bgn.add_change('BIF', 0.1)
+    bgn.add_change('BTN', 0.56)
+    bgn.add_change('BRL', 0.08)
+
+    bhd = Currency('BHD')
+    bhd.add_change('BGN', 0.03)
+    bhd.add_change('AOA', 0.65)
+    bhd.add_change('AMD', 0.01)
+    bhd.add_change('BIF', 0.15)
+
+    bif = Currency('BIF')
+    bif.add_change('BGN', 0.1)
+    bif.add_change('BHD', 0.15)
+
+    bmd = Currency('BMD')
+    bmd.add_change('AZN', 0.06)
+    bmd.add_change('BND', 0.1)
+    bmd.add_change('BOV', 0.07)
+    bmd.add_change('DZD', 0.59)
+
+    bnd = Currency('BND')
+    bnd.add_change('BMD', 0.1)
+    bnd.add_change('BOV', 0.45)
+    bnd.add_change('AZN', 0.48)
+    bnd.add_change('BSD', 0.03)
+    bnd.add_change('BWP', 0.73)
+    bnd.add_change('CNY', 0.83)
+    bnd.add_change('COP', 0.09)
+
+    bob = Currency('BOB')
+    bob.add_change('BOV', 0.01)
+    bob.add_change('BAM', 0.08)
+    bob.add_change('BSD', 0.25)
+    bob.add_change('BTN', 0.1)
+
+    bov = Currency('BOV')
+    bov.add_change('BMD', 0.07)
+    bov.add_change('BND', 0.45)
+    bov.add_change('BOB', 0.01)
+
+    brl = Currency('BRL')
+    brl.add_change('BGN', 0.08)
+    brl.add_change('BTN', 0.82)
+    brl.add_change('BSD', 0.93)
+
+    bsd = Currency('BSD')
+    bsd.add_change('BRL', 0.93)
+    bsd.add_change('BOB', 0.25)
+    bsd.add_change('BND', 0.03)
+
+    btn = Currency('BTN')
+    btn.add_change('BAM', 0.63)
+    btn.add_change('BOB', 0.1)
+    btn.add_change('BGN', 0.56)
+    btn.add_change('BRL', 0.82)
+
+    bwp = Currency('BWP')
+    bwp.add_change('CLF', 0.96)
+    bwp.add_change('BZD', 0.25)
+    bwp.add_change('BND', 0.73)
+    bwp.add_change('COP', 0.96)
+    bwp.add_change('CUC', 0.1)
+
+    byn = Currency('BYN')
+    byn.add_change('BZD', 0.05)
+    byn.add_change('CAD', 0.63)
+    byn.add_change('CVE', 0.33)
+
+    bzd = Currency('BZD')
+    bzd.add_change('CAD', 0.31)
+    bzd.add_change('CLF', 0.1)
+    bzd.add_change('BWP', 0.25)
+    bzd.add_change('BYN', 0.05)
+
+    cad = Currency('CAD')
+    cad.add_change('CDF', 0.89)
+    cad.add_change('CHE', 0.06)
+    cad.add_change('BZD', 0.31)
+    cad.add_change('BYN', 0.63)
+
+    cdf = Currency('CDF')
+    cdf.add_change('CHF', 0.07)
+    cdf.add_change('CHW', 0.67)
+    cdf.add_change('CHE', 0.48)
+    cdf.add_change('CAD', 0.89)
+
+    che = Currency('CHE')
+    che.add_change('CHW', 0.01)
+    che.add_change('CDF', 0.48)
+    che.add_change('CLF', 0.9)
+    che.add_change('CAD', 0.06)
+
+    chf = Currency('CHF')
+    chf.add_change('ANG', 0.85)
+    chf.add_change('CHW', 0.71)
+    chf.add_change('CDF', 0.07)
+
+    chw = Currency('CHW')
+    chw.add_change('AOA', 0.82)
+    chw.add_change('CHF', 0.71)
+    chw.add_change('CDF', 0.67)
+    chw.add_change('CHE', 0.01)
+
+    clf = Currency('CLF')
+    clf.add_change('AOA', 0.99)
+    clf.add_change('CHE', 0.9)
+    clf.add_change('BZD', 0.1)
+    clf.add_change('BWP', 0.96)
+
+    clp = Currency('CLP')
+    clp.add_change('DZD', 0.45)
+    clp.add_change('CNY', 0.32)
+    clp.add_change('CRC', 0.07)
+
+    cny = Currency('CNY')
+    cny.add_change('BND', 0.83)
+    cny.add_change('DZD', 0.83)
+    cny.add_change('COP', 0.06)
+    cny.add_change('CLP', 0.32)
+    cny.add_change('COU', 0.78)
+
+    cop = Currency('COP')
+    cop.add_change('BND', 0.09)
+    cop.add_change('BWP', 0.96)
+    cop.add_change('CUC', 0.1)
+    cop.add_change('COU', 0.59)
+    cop.add_change('CNY', 0.06)
+
+    cou = Currency('COU')
+    cou.add_change('CNY', 0.78)
+    cou.add_change('COP', 0.59)
+    cou.add_change('CUC', 0.99)
+    cou.add_change('DKK', 0.69)
+
+    crc = Currency('CRC')
+    crc.add_change('CLP', 0.07)
+    crc.add_change('DKK', 0.21)
+
+    cuc = Currency('CUC')
+    cuc.add_change('COU', 0.99)
+    cuc.add_change('COP', 0.1)
+    cuc.add_change('BWP', 0.1)
+    cuc.add_change('DOP', 0.58)
+    cuc.add_change('DJF', 0.21)
+
+    cup = Currency('CUP')
+    cup.add_change('DKK', 0.87)
+    cup.add_change('CZK', 0.3)
+
+    cve = Currency('CVE')
+    cve.add_change('CZK', 0.99)
+    cve.add_change('DJF', 0.77)
+    cve.add_change('BYN', 0.33)
+    cve.add_change('DOP', 0.09)
+
+    czk = Currency('CZK')
+    czk.add_change('CUP', 0.3)
+    czk.add_change('DKK', 0.08)
+    czk.add_change('DJF', 0.83)
+    czk.add_change('CVE', 0.99)
+
+    djf = Currency('DJF')
+    djf.add_change('CUC', 0.21)
+    djf.add_change('CVE', 0.77)
+    djf.add_change('CZK', 0.83)
+    djf.add_change('DKK', 0.91)
+
+    dkk = Currency('DKK')
+    dkk.add_change('COU', 0.69)
+    dkk.add_change('CRC', 0.21)
+    dkk.add_change('DJF', 0.91)
+    dkk.add_change('CZK', 0.08)
+    dkk.add_change('CUP', 0.87)
+
+    dop = Currency('DOP')
+    dop.add_change('CUC', 0.58)
+    dop.add_change('CVE', 0.09)
+
+    dzd = Currency('DZD')
+    dzd.add_change('BMD', 0.59)
+    dzd.add_change('CNY', 0.83)
+    dzd.add_change('CLP', 0.45)
+
+    return {aed, afn, all, amd, ang, aoa, ars, aud, awg, azn, bam, bbd, bdt, bgn, bhd, bif, bmd, bnd, bob, bov, brl,
+            bsd, btn, bwp, byn, bzd, cad, cdf, che, chf, chw, clf, clp, cny, cop, cou, crc, cuc, cup, cve, czk, djf,
+            dkk, dop, dzd}
+
+
+
 if __name__ == '__main__':
     print('-------- GRAPH 1 -----------------')
     print('\n1)  Brute force:')
