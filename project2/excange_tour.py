@@ -159,7 +159,7 @@ def _2opt(g, hc, cost):
                 edited = True
                 cost = round(cost - old_w + new_w, 10)
                 hc[i + 1], hc[i + 2] = hc[i + 2], hc[i + 1]
-                print(i, ':  ', hc)
+                print('swap', hc)
 
     return edited, hc, cost
 
@@ -168,7 +168,7 @@ def _rotate(hc):
     return hc[1:] + [hc[1]]
 
 
-if __name__ == '__main__':
+def _populate_graph1():
     usd = Currency('USD')
     usd.add_change('GBP', 0.09)
     usd.add_change('EUR', 0.3)
@@ -193,5 +193,104 @@ if __name__ == '__main__':
     jpy.add_change('USD', 0.43)
     jpy.add_change('CNY', 0.11)
 
-    print(excange_tour_brute_force({usd, gbp, eur, cny, jpy}))
-    print('\n', excange_tour({usd, gbp, eur, cny, jpy}))
+    return {usd, gbp, eur, cny, jpy}
+
+
+def _populate_graph2():
+    gbp = Currency('GBP')
+    gbp.add_change('BDT', 0.66)
+    gbp.add_change('AED', 0.2)
+    gbp.add_change('USD', 0.09)
+    gbp.add_change('EUR', 0.31)
+    gbp.add_change('CNY', 0.05)
+
+    cny = Currency('CNY')
+    cny.add_change('GBP', 0.05)
+    cny.add_change('EUR', 0.87)
+    cny.add_change('ILS', 0.34)
+    cny.add_change('JPY', 0.11)
+
+    eur = Currency('EUR')
+    eur.add_change('GBP', 0.31)
+    eur.add_change('CNY', 0.87)
+    eur.add_change('DOP', 0.15)
+    eur.add_change('USD', 0.3)
+
+    ils = Currency('ILS')
+    ils.add_change('DOP', 0.15)
+    ils.add_change('CNY', 0.34)
+    ils.add_change('LAB', 0.6)
+    ils.add_change('JOD', 0.05)
+
+    dop = Currency('DOP')
+    dop.add_change('EUR', 0.15)
+    dop.add_change('ILS', 0.15)
+    dop.add_change('JOD', 0.11)
+    dop.add_change('USD', 0.2)
+
+    aed = Currency('AED')
+    aed.add_change('GBP', 0.2)
+    aed.add_change('USD', 0.15)
+    aed.add_change('JPY', 0.4)
+    aed.add_change('ETB', 0.4)
+    aed.add_change('BDT', 0.48)
+
+    usd = Currency('USD')
+    usd.add_change('AED', 0.15)
+    usd.add_change('GBP', 0.09)
+    usd.add_change('EUR', 0.3)
+    usd.add_change('DOP', 0.2)
+    usd.add_change('JPY', 0.43)
+
+    jod = Currency('JOD')
+    jod.add_change('DOP', 0.11)
+    jod.add_change('ILS', 0.05)
+    jod.add_change('LAB', 0.4)
+
+    lab = Currency('LAB')
+    lab.add_change('ILS', 0.6)
+    lab.add_change('JOD', 0.4)
+
+    etb = Currency('ETB')
+    etb.add_change('AED', 0.4)
+    etb.add_change('GIP', 0.3)
+    etb.add_change('CAD', 0.5)
+
+    gip = Currency('GIP')
+    gip.add_change('ETB', 0.3)
+    gip.add_change('CAD', 0.25)
+
+    cad = Currency('CAD')
+    cad.add_change('ETB', 0.5)
+    cad.add_change('GIP', 0.25)
+    cad.add_change('JPY', 0.06)
+    cad.add_change('BDT', 0.85)
+
+    bdt = Currency('BDT')
+    bdt.add_change('GBP', 0.66)
+    bdt.add_change('AED', 0.48)
+    bdt.add_change('CAD', 0.85)
+    bdt.add_change('JPY', 0.12)
+
+    jpy = Currency('JPY')
+    jpy.add_change('BDT', 0.12)
+    jpy.add_change('CAD', 0.06)
+    jpy.add_change('AED', 0.4)
+    jpy.add_change('USD', 0.43)
+    jpy.add_change('CNY', 0.11)
+
+    return {gbp, cny, eur, ils, dop, aed, usd, jod, lab, etb, gip, cad, bdt, jpy}
+
+
+if __name__ == '__main__':
+    print('-------- GRAPH 1 -----------------')
+    print('\n1)  Brute force:')
+    print(excange_tour_brute_force(_populate_graph1()))
+    print('\n2)  Local Search:')
+    print(excange_tour(_populate_graph1()))
+
+    print('\n\n------------ GRAPH 2 -----------------')
+    print('\n1)  Brute force:')
+    print(excange_tour_brute_force(_populate_graph2()))
+    print('\n2)  Local Search:')
+    print(excange_tour(_populate_graph2()))
