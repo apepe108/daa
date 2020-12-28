@@ -9,19 +9,24 @@ from datetime import datetime
 
 def excange_tour(C):
     """A local search algorithm that takes in input a set of Currency objects and looks for
-    an exchange tour of minimal rate."""
+    an exchange tour of minimal rate.
+
+    :param C: a set of Currency objects.
+    :return list representing the computed Hamiltonian cycle or None if the set made a non Hamiltonian graph."""
     g, V = _create_graph(C)
 
-    # found, hc, cost = _backtracking_random_hamiltonian(g)
-    founded, path = hybridHAM(g)
-    print('sto qua', path)
+    hc = []
+    found = hybridHAM(g, hc)
+    if not found:
+        return None
     # print('founded first', datetime.now())  # ------------------------------------------------------------ DEBUG PRINT
-    #
-    # edited = True
-    # while edited:
-    #     edited, hc, cost = _2_3opt(g, hc, cost, max_cnt=len(hc) // 3)
-    #
-    # return hc, cost
+
+    cost = 0
+    edited = True
+    while edited:
+        edited = _2_3opt(g, hc, num_cycle=len(hc) // 3)
+
+    return hc
 
 
 def _create_graph(set_currencies):
@@ -46,83 +51,42 @@ def _create_graph(set_currencies):
             if g.get_edge(vert, V[change]) is None:
                 g.insert_edge(vert, V[change], cur.get_change(change))
 
-    print('created', datetime.now())  # ------------------------------------------------------------------ DEBUG PRINT
+    # print('created', datetime.now())  # ------------------------------------------------------------------ DEBUG PRINT
 
     return g, V
 
 
-def _backtracking_random_hamiltonian(g, curr=None, hc=None, cost=0):
-    """Given a graph, it returns one of the possible Hamiltonian cycles if it exists.
-
-    NOTE: complexity is very high O(n-1!) "factorial".
-
-    :param g: the graph where to look for a Hamiltonian cycle.
-    :param hc: the hamiltonian cycle path.
-    :returns: True if an Hamiltonian cycles exists, otherwise False;
-    :returns: a list of vertex representing the path;
-    :returns: the solution cost;
-    """
-    # By default, the cycle is evaluated from the beginning, starting from a random node.
-    if hc is None:
-        if curr is None:
-            curr = random.choice(list(g.vertices()))
-        hc = [curr]
-        return _backtracking_random_hamiltonian(g, curr, hc, cost)
-
-    # base case: if all vertices are included in the path Last vertex must be adjacent to the first vertex in path to
-    # make a cycle
-    if g.vertex_count() == len(hc):
-        e = g.get_edge(hc[0], hc[-1])
-        return e is not None, hc, round(cost + e.element(), 10) if e is not None else cost
-
-    # Try different vertices as a next candidate in Hamiltonian Cycle
-    for e in g.incident_edges(curr):
-        o = e.opposite(curr)  # for each adjacent vertex
-        if o not in hc:
-            hc.append(o)
-
-            # Start recurs
-            res = _backtracking_random_hamiltonian(g, o, hc, round(cost + e.element(), 10))
-
-            if res[0]:  # if solution found
-                return res
-            else:  # remove the current currency and try with another
-                hc.pop()
-
-    # Fail case
-    return False, hc, cost
-
-
-def _2_3opt(g, hc, cost, max_cnt=3):
+# ---------------------------------------------------------------------------------------------------------------------
+# -------------- TRY TO REMOVE NUM CYCLE OPERATING 2-3 OPT ON DOUBLE SIZE ARRAY ---------------------------------------
+# ---------------------------------------------------------------------------------------------------------------------
+def _2_3opt(g, hc, num_cycle):
     """Call the 2 opt algorithm until you get a 2opt-optimal solution, then call the 3-opt algorithm until you get an
     optimal 3-opt solution. If there are no more improvements, it re-executes on the rotated cycle and, if there are no
     improvements here, it returns the cycle found and its cost.
 
     :param g: the graph on which to search for the minimum Hamiltonian cycle;
-    :param hc: the starting Hamiltonian cycle;
-    :param cost: the cost of the starting cycle.
-    :returns: a boolean indicating whether the algorithm has found a better solution; the new cycle if improved,
-    otherwise the same input data; the cost of the new cycle if improved, otherwise the cost given as input."""
+    :param hc: list containing a starting Hamiltonian cycle that will be replaced with an improved cycle, if reduced.
+    :returns: a boolean indicating whether the algorithm has found a better solution."""
 
     cnt = 0
     edited = False
 
-    while cnt < max_cnt:
-        edited, hc, cost = _2opt(g, hc, cost)
+    while cnt < num_cycle:
+        edited = _2opt(g, hc)
         if edited:
             cnt = 0
         else:
-            edited, hc, cost = _3opt(g, hc, cost)
+            edited = _3opt(g, hc)
             if edited:
                 cnt = 0
             else:
-                hc = _rotate(hc, 1 / max_cnt)
+                _rotate(hc, 1 / num_cycle)
                 cnt += 1
 
-    return edited, hc + [hc[0]], cost
+    return edited
 
 
-def _2opt(g, hc, cost):
+def _2opt(g, hc):
     """The idea is the following:
     1) disconnect hc[i] - hc[i+1] and hc[j] - hc[j+1];
     2) try to reconnect hc[i] - hc[j] and hc[i+1] - hc[j+1], if it's possible and if the solution is better.
@@ -134,12 +98,10 @@ def _2opt(g, hc, cost):
         2.. hc[j+1]     hc[i+1]                 2.. hc[j+1]  -   hc[i+1]
 
     :param g: the graph on which to search for the minimum Hamiltonian cycle;
-    :param hc: the starting Hamiltonian cycle;
-    :param cost: the cost of the starting cycle.
-    :returns: a boolean indicating whether the algorithm has found a better solution; the new cycle if improved,
-    otherwise the same input data; the cost of the new cycle if improved, otherwise the cost given as input."""
+    :param hc: list containing a starting Hamiltonian cycle that will be replaced with an improved cycle, if reduced.
+    :returns: a boolean indicating whether the algorithm has found a better solution."""
 
-    print('\tstart 2opt:   ', hc)  # --------------------------------------------------------------------- DEBUG PRINT
+    # print('\tstart 2opt:   ', hc)  # --------------------------------------------------------------------- DEBUG PRINT
 
     edited = False
 
@@ -156,19 +118,18 @@ def _2opt(g, hc, cost):
                 old_w = round(old_e1.element() + old_e2.element(), 10)
                 new_w = round(new_e1.element() + new_e2.element(), 10)
 
-                print('\t\told {}, new {}'.format(old_w, new_w))  # -------------------------------------- DEBUG PRINT
+                # print('\t\told {}, new {}'.format(old_w, new_w))  # -------------------------------------- DEBUG PRINT
 
                 if old_w > new_w:
                     edited = True
-                    cost = round(cost - old_w + new_w, 10)
                     hc[i + 1:j + 1] = hc[j:i:-1]
 
-                    print('\t\t\t', 'i:', i, 'j:', j, '\n\t\t\tr -> ', hc)  # ---------------------------- DEBUG PRINT
+                    # print('\t\t\t', 'i:', i, 'j:', j, '\n\t\t\tr -> ', hc)  # ---------------------------- DEBUG PRINT
 
-    return edited, hc, cost
+    return edited
 
 
-def _3opt(g, hc, cost):
+def _3opt(g, hc):
     """The idea is the following:
     We do not want to use the 3 opt in its totality as a complexity O(n^3) would not be very acceptable, therefore,
     considering to run it only after the 2opt termination, we only take into account the 3opt cases, and in the case of
@@ -185,12 +146,10 @@ def _3opt(g, hc, cost):
                                                                            \_______________________|
 
     :param g: g: the graph on which to search for the minimum Hamiltonian cycle;
-    :param hc: the starting Hamiltonian cycle;
-    :param cost: the cost of the starting cycle.
-    :returns: a boolean indicating whether the algorithm has found a better solution; the new cycle if improved,
-    otherwise the same input data; the cost of the new cycle if improved, otherwise the cost given as input."""
+    :param hc: list containing a starting Hamiltonian cycle that will be replaced with an improved cycle, if reduced.
+    :returns: a boolean indicating whether the algorithm has found a better solution."""
 
-    print('\tstart 3opt:   ', hc)  # --------------------------------------------------------------------- DEBUG PRINT
+    # print('\tstart 3opt:   ', hc)  # --------------------------------------------------------------------- DEBUG PRINT
 
     edited = False
 
@@ -219,42 +178,38 @@ def _3opt(g, hc, cost):
                     old_w = round(old_e1.element() + old_e2.element() + old_e3.element(), 10)
                     new_w = round(new_e1.element() + new_e2.element() + new_e3.element(), 10)
 
-                    print('\t\t', 'i:', i, 'j:', j, 'k:', k, 'sx old {}, new {}'.format(old_w, new_w))  # -DEBUG PRINT
+                    # print('\t\t', 'i:', i, 'j:', j, 'k:', k, 'sx old {}, new {}'.format(old_w, new_w))  # -DEBUG PRINT
 
                     if old_w > new_w:
                         edited = True
-                        cost = round(cost - old_w + new_w, 10)
                         hc[i + 1:k + 1] = hc[j + 1:k + 1] + hc[i + 1:j + 1]
 
-                        print('\n\t\t\tr -> ', hc)  # --------------- DEBUG PRINT
+                        # print('\n\t\t\tr -> ', hc)  # ---------------------------------------------------- DEBUG PRINT
 
                 elif new_e4 is not None and new_e5 is not None and new_e6 is not None:
                     # ...and, in the case, if it's a better solution.
                     old_w = round(old_e1.element() + old_e2.element() + old_e3.element(), 10)
                     new_w = round(new_e4.element() + new_e5.element() + new_e6.element(), 10)
 
-                    print('\t\t', 'i:', i, 'j:', j, 'k:', k, 'sx old {}, new {}'.format(old_w, new_w))  # -DEBUG PRINT
+                    # print('\t\t', 'i:', i, 'j:', j, 'k:', k, 'sx old {}, new {}'.format(old_w, new_w))  # -DEBUG PRINT
 
                     if old_w > new_w:
-                        print('\t\t', new_e4, new_e5, new_e6)
                         edited = True
-                        cost = round(cost - old_w + new_w, 10)
                         hc[i + 1:k + 1] = hc[j + 1:k + 1] + hc[j:i:-1]
 
-                        # DEBUG PRINT
-                        print('\n\t\t\tr -> ', hc)  # --------------- DEBUG PRINT
+                        # print('\n\t\t\tr -> ', hc)  # ---------------------------------------------------- DEBUG PRINT
 
-    return edited, hc, cost
+    return edited
 
 
 def _rotate(hc, frac=0.33):
     """rotate the solution found by 'item' nodes, leaving the solution unchanged.
 
-    :param hc: the Hamiltonian cycle represented with a list of vertex;
-    :param frac: percentual of solution to rotate;
+    :param hc: the list representing a Hamiltonian cycle that will be rotated;
+    :param frac: percentage of solution to rotate;
     :return: the rotated Hamiltonian cycle."""
     n = round(len(hc) * frac)
-    return hc[n:] + hc[:n]
+    hc[:] = hc[n:] + hc[:n]
 
 
 # ------------------------ GRAPHS FOR TESTING --------------------------------------------------------------------------
@@ -705,28 +660,40 @@ def excange_tour_brute_force(C):
 
 if __name__ == '__main__':
     print('-------- GRAPH 1 -----------------')
-    print('\n1)  Brute force:')
-    print(excange_tour_brute_force(_populate_graph1()))
-    print('end', datetime.now())
+    # print('\nBrute force:')
+    # start_time = datetime.now()
+    # print(excange_tour_brute_force(_populate_graph1()))
+    # end_time = datetime.now()
+    # print('founded in {}'.format(end_time - start_time))
 
-    print('\n2)  Local Search:')
+    print('\nLocal Search:')
+    start_time = datetime.now()
     print(excange_tour(_populate_graph1()))
-    print('end', datetime.now())
+    end_time = datetime.now()
+    print('founded in {}'.format(end_time - start_time))
 
     print('\n\n------------ GRAPH 2 -----------------')
-    print('\n1)  Brute force:')
-    print(excange_tour_brute_force(_populate_graph2()))
-    print('end', datetime.now())
+    # print('\nBrute force:')
+    # start_time = datetime.now()
+    # print(excange_tour_brute_force(_populate_graph2()))
+    # end_time = datetime.now()
+    # print('founded in {}'.format(end_time - start_time))
 
-    print('\n2)  Local Search:')
+    print('\nLocal Search:')
+    start_time = datetime.now()
     print(excange_tour(_populate_graph2()))
-    print('end', datetime.now())
+    end_time = datetime.now()
+    print('founded in {}'.format(end_time - start_time))
 
     print('\n\n------------ GRAPH 3 -----------------')
-    # print('\n1)  Brute force:')
+    # print('\nBrute force:')
+    # start_time = datetime.now()
     # print(excange_tour_brute_force(_populate_graph3()))
-    # print('end', datetime.now())
+    # end_time = datetime.now()
+    # print('founded in {}'.format(end_time - start_time))
 
-    print('\n2)  Local Search:', datetime.now())
+    print('\nLocal Search')
+    start_time = datetime.now()
     print(excange_tour(_populate_graph3()))
-    print('end', datetime.now())
+    end_time = datetime.now()
+    print('founded in {}'.format(end_time - start_time))

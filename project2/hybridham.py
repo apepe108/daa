@@ -1,13 +1,14 @@
 import random
 
 
-def hybridHAM(g):
+def hybridHAM(g, path):
     """HybridHAM algorithm based. The proposed algorithm works in three steps:
-        (l) Create an initial path
+        (1) Create an initial path
         (2) Convert the initial path to Hamiltonian path.
         (3) Convert the Hamiltonian path to Hamiltonian cycle.
 
     :param g: the graph where to look for a Hamiltonian cycle;
+    :param path: a list in which to save the path;
     :return True if a Hamiltonian cycle where found, otherwise false."""
 
     # From the input graph, create two arrays Va and Vd of vertices sorted in the increasing and decreasing
@@ -20,20 +21,17 @@ def hybridHAM(g):
         Va.append(vert)
     Va.sort(key=_by_degree)
 
-    Vd = Va[:]
-    Vd.reverse()
-
     # -----------   Phase 1   --------------------
     # Create an initial path
-    path = []
-    i = 0
+    path[:] = []
+    i = len(Va) - 1
 
     # Repeat Phase I for each of the highest degree vertex of the graph and select the longest Pi as initial path.
-    while len(path) != g.vertex_count() and (i == 0 or Vd[i] == Vd[i - 1]):
+    while len(path) != g.vertex_count() and i > 0 and (i == len(Va) - 1 or Va[i] == Va[i + 1]):
         new_path = []
 
         # (1) Start from one of the highest degree vertex (first vertex in the array Vd). Let it be Vs.
-        vs = Vd[i]
+        vs = Va[i]
 
         # 2) Add it to the initial path.
         new_path.append(vs)
@@ -41,12 +39,11 @@ def hybridHAM(g):
         # (3) Repeat until vs becomes a dead end.
         _greedy_dfs(g, vs, new_path, Va)
 
-        print('greedy_dfs', new_path, len(new_path))
-
         if len(new_path) > len(path):
-            path = new_path[:]
-        i += 1
+            path[:] = new_path[:]
+        i -= 1
     # //End of Phase 1
+    # print('greedy_dfs:', path, len(path))  # ------------------------------------------------------------- DEBUG PRINT
     # (4) If |Pi| == n then go to Phase 3.
 
     # -----------   Phase 2   --------------------
@@ -65,13 +62,13 @@ def hybridHAM(g):
         # (d) If rotational transformation could not be applied then either the graph is not having Hamiltonian path or
         # the algorithm fails to identify the Hamiltonian path and so exit.
         if not _rotational_transform(g, path):
-            return False, None
+            return False
 
         # (e) Extend this new path by using the greedy depth first search as in Phase 1
         _greedy_dfs(g, path[-1], path, Va)
 
     # (6) Now Pi is the Hamiltonian Path Pi. Assign Ph = i.
-    print('maxed', path, len(path))
+    # print('hamiltonian_path:', path, len(path))  # ------------------------------------------------------- DEBUG PRINT
 
     # -----------   Phase 3   --------------------
     # Convert Hamiltonian path into Hamiltonian cycle
@@ -90,18 +87,23 @@ def hybridHAM(g):
         # (d) If rotational transformation could not be applied then either the graph is not having Hamiltonian Cycle or
         # the algorithm fails to identify the Hamiltonian path and so exit.
         if not _rotational_transform(g, path):
-            return False, None
-
-        print('partial cycle', path)
+            return False
 
     # (9) Now Ph is the Hamiltonian cycle and return Ph.
+    # print('hamiltonian_cycle:', path)  # ----------------------------------------------------------------- DEBUG PRINT
     # End of 3
-    print('cycle', path)
 
-    return True, path
+    return True
 
 
 def _greedy_dfs(g, vs, path, va):
+    """Like the DFS algorithm, it loops through the graph. However, unlike DFS, it does not go through the same node
+    twice. In addition, of the nodes adjacent to the current one, the one with the lowest degree is visited.
+
+    :param g: the graph we are using in the Hamiltonian tour search;
+    :param vs: the starting edge;
+    :param path: the list into memorize the path;
+    :param va: a list containing all the vertex in the graph, sorted by increasing degree."""
     # (a) Select the next smallest degree neighbour of Vs. Let it be Vi.
     vi = None
 
@@ -109,10 +111,7 @@ def _greedy_dfs(g, vs, path, va):
         edge = g.get_edge(vs, v)
         if edge is not None:
             if v not in path:
-                # UNREACHABLE VERTEX HEURISTIC (not implemented)
-                # (b) If the selection of Vi is not making any of its unvisited neighbours unreachable then
-                #     (i) add it to the initial path Pi
-                #     (ii) make Vi as vs
+                # if not _unreachable_vertex(g, path, v):
                 vi = v
                 break
 
@@ -121,8 +120,20 @@ def _greedy_dfs(g, vs, path, va):
         _greedy_dfs(g, vi, path, va)
 
 
+def _unreachable_vertex(g, path, v):
+    """Unreachable Vertex Heuristic NOT IMPLEMENTED!
+    We agreed that, although this heuristic avoids the creation of dead ends, the performance decreases a
+    lot compared to recovering them through step 2 (rotational transform)."""
+    pass
+
+
 def _rotational_transform(g, path):
-    # (1) Find a vertex adjacent to vx in the input graph, in path P. Let it be vertex b.
+    """(1) Find a vertex adjacent to the end path in the input graph, in path P. It then makes the new vertex the final
+    part of the path.
+
+    :param g: the graph we are using in the Hamiltonian tour search;
+    :param path: the path on which to apply the rotational transform.
+    :return True if the path is rotated. If the path is not rotatable, it returns False."""
     vx = path[-1]
 
     adj_vx = [e.opposite(vx) for e in g.incident_edges(vx)]
@@ -137,9 +148,12 @@ def _rotational_transform(g, path):
 
 
 def _rotate_path(path, b):
-    # (2) Create a new path P',
-    #     (a) by connecting b to e
-    #     (b) by reversing the path from end to e
+    """(2) Create a new path P',
+           (a) by connecting b to e
+           (b) by reversing the path from end to e
+    
+    :param path: The path represented by a list of vertices to rotate;
+    :param b: The element to connect at the end of the loop."""
     i_b = path.index(b)
     if i_b < len(path) - 2:
         path[i_b + 1:] = path[-1:i_b:-1]
