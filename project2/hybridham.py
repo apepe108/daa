@@ -1,14 +1,13 @@
 import random
 
 
-def hybridHAM(g, tour):
+def hybridHAM(g):
     """HybridHAM algorithm based. The proposed algorithm works in three steps:
         (l) Create an initial path
         (2) Convert the initial path to Hamiltonian path.
         (3) Convert the Hamiltonian path to Hamiltonian cycle.
 
     :param g: the graph where to look for a Hamiltonian cycle;
-    :param tour: the list in which to memorize the Hamiltonian cycle;
     :return True if a Hamiltonian cycle where found, otherwise false."""
 
     # From the input graph, create two arrays Va and Vd of vertices sorted in the increasing and decreasing
@@ -66,7 +65,7 @@ def hybridHAM(g, tour):
         # (d) If rotational transformation could not be applied then either the graph is not having Hamiltonian path or
         # the algorithm fails to identify the Hamiltonian path and so exit.
         if not _rotational_transform(g, path):
-            return False
+            return False, None
 
         # (e) Extend this new path by using the greedy depth first search as in Phase 1
         _greedy_dfs(g, path[-1], path, Va)
@@ -91,7 +90,7 @@ def hybridHAM(g, tour):
         # (d) If rotational transformation could not be applied then either the graph is not having Hamiltonian Cycle or
         # the algorithm fails to identify the Hamiltonian path and so exit.
         if not _rotational_transform(g, path):
-            return False
+            return False, None
 
         print('partial cycle', path)
 
@@ -99,7 +98,7 @@ def hybridHAM(g, tour):
     # End of 3
     print('cycle', path)
 
-    return True
+    return True, path
 
 
 def _greedy_dfs(g, vs, path, va):
@@ -144,4 +143,3 @@ def _rotate_path(path, b):
     i_b = path.index(b)
     if i_b < len(path) - 2:
         path[i_b + 1:] = path[-1:i_b:-1]
-

@@ -13,7 +13,8 @@ def excange_tour(C):
     g, V = _create_graph(C)
 
     # found, hc, cost = _backtracking_random_hamiltonian(g)
-    hybridHAM(g, [])
+    founded, path = hybridHAM(g)
+    print('sto qua', path)
     # print('founded first', datetime.now())  # ------------------------------------------------------------ DEBUG PRINT
     #
     # edited = True
