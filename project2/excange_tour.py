@@ -2,6 +2,7 @@ import random
 
 from TdP_collections.graphs.graph import Graph
 from project1.currency import Currency
+from project2.hybridham import hybridHAM
 
 from datetime import datetime
 
@@ -11,14 +12,15 @@ def excange_tour(C):
     an exchange tour of minimal rate."""
     g, V = _create_graph(C)
 
-    found, hc, cost = _backtracking_random_hamiltonian(g)
-    print('founded first', datetime.now())  # ------------------------------------------------------------ DEBUG PRINT
-
-    edited = True
-    while edited:
-        edited, hc, cost = _2_3opt(g, hc, cost, max_cnt=len(hc) // 3)
-
-    return hc, cost
+    # found, hc, cost = _backtracking_random_hamiltonian(g)
+    hybridHAM(g, [])
+    # print('founded first', datetime.now())  # ------------------------------------------------------------ DEBUG PRINT
+    #
+    # edited = True
+    # while edited:
+    #     edited, hc, cost = _2_3opt(g, hc, cost, max_cnt=len(hc) // 3)
+    #
+    # return hc, cost
 
 
 def _create_graph(set_currencies):
@@ -46,18 +48,6 @@ def _create_graph(set_currencies):
     print('created', datetime.now())  # ------------------------------------------------------------------ DEBUG PRINT
 
     return g, V
-
-
-def _random_hamiltonian(g, tour):
-    """HybridHAM algorithm based. The proposed HybridHAM algorithm works in three steps:
-        (l) Create an initial path
-        (2) Convert the initial path to Hamiltonian path.
-        (3) Convert the Hamiltonian path to Hamiltonian cycle.
-
-    :param g: the graph where to look for a Hamiltonian cycle;
-    :param tour: the list in which to memorize the Hamiltonian cycle;
-    :return True if a Hamiltonian cycle where found, otherwise false."""
-    pass
 
 
 def _backtracking_random_hamiltonian(g, curr=None, hc=None, cost=0):
@@ -736,6 +726,6 @@ if __name__ == '__main__':
     # print(excange_tour_brute_force(_populate_graph3()))
     # print('end', datetime.now())
 
-    # print('\n2)  Local Search:', datetime.now())
-    # print(excange_tour(_populate_graph3()))
-    # print('end', datetime.now())
+    print('\n2)  Local Search:', datetime.now())
+    print(excange_tour(_populate_graph3()))
+    print('end', datetime.now())
