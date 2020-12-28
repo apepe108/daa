@@ -1,7 +1,5 @@
 import random
 
-from TdP_collections.graphs.graph import Graph
-
 
 def hybridHAM(g, tour):
     """HybridHAM algorithm based. The proposed algorithm works in three steps:
@@ -26,7 +24,7 @@ def hybridHAM(g, tour):
     Vd = Va[:]
     Vd.reverse()
 
-    # PHASE 1
+    # -----------   Phase 1   --------------------
     # Create an initial path
     path = []
     i = 0
@@ -52,7 +50,7 @@ def hybridHAM(g, tour):
     # //End of Phase 1
     # (4) If |Pi| == n then go to Phase 3.
 
-    # Phase 2
+    # -----------   Phase 2   --------------------
     # Convert the initial path into Hamiltonian path
     # (5) Repeat until |Pi| != n.
     while len(path) != g.vertex_count():
@@ -79,22 +77,27 @@ def hybridHAM(g, tour):
     # Phase 3
     # Convert Hamiltonian path into Hamiltonian cycle
 
-    # (8) Repeat
-    # (a) Select the smallest degree end of the path Ph for
-    # rotational transformation
-    # (b) Reverse Ph if the first vertex in Ph is having
-    # degree higher than the last vertex to make the
-    # smallest degree vertex as the end vertex of the
-    # path. Let it be v.
-    # (c) Apply rotational transformation to Ph using v»,
-    # to get a new path.
-    # (d) If rotational transformation could not be
-    # applied then either the graph is not having
-    # Hamiltonian Cycle or the algorithm fails to
-    # identify the Hamiltonian path and so exit.
-    # Until there is an edge connecting the first and last
-    # vertices of the path Ph.
-    # (9) Now Ph is the Hamiltonian cycle and return PIE.
+    # (8) Repeat until there is an edge connecting the first and last vertices of the path Ph.
+    while g.get_edge(path[0], path[-1]) is None:
+        # (a) Select the smallest degree end of the path Ph for rotational transformation
+        d_front, d_back = g.degree(path[0]), g.degree(path[-1])
+
+        # (b) Reverse Ph if the first vertex in Ph is having degree higher than the last vertex to make the smallest
+        # degree vertex as the end vertex of the path. Let it be Vy.
+        if d_front < d_back or (d_front == d_back and random.random() > 0.5):  # Upgrade: introduced probability change
+            path.reverse()
+
+        # (c) Apply rotational transformation to Ph using Vy, to get a new path.
+        # (d) If rotational transformation could not be applied then either the graph is not having Hamiltonian Cycle or
+        # the algorithm fails to identify the Hamiltonian path and so exit.
+        if not _rotational_transform(g, path):
+            return False
+
+    # (9) Now Ph is the Hamiltonian cycle and return Ph.
+    # End of 3
+    print('cycle', path)
+
+    return True
 
 
 def _greedy_dfs(g, vs, path, va):
@@ -115,7 +118,6 @@ def _greedy_dfs(g, vs, path, va):
     if vi is not None:
         path.append(vi)
         _greedy_dfs(g, vi, path, va)
-    return
 
 
 def _rotational_transform(g, path):
