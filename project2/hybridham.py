@@ -15,42 +15,39 @@ def hybridHAM(g, tour):
 
     # From the input graph, create two arrays Va and Vd of vertices sorted in the increasing and decreasing
     # order of their degrees, respectively.
-    def _take_first(elem):
-        return elem[0]
+    def _by_degree(v):
+        return g.degree(v)
 
     Va = []
     for vert in g.vertices():
-        Va.append((g.degree(vert), vert))
-    Va.sort(key=_take_first)
+        Va.append(vert)
+    Va.sort(key=_by_degree)
 
     Vd = Va[:]
     Vd.reverse()
 
-    _, n_va = zip(*Va)
-    _, n_vd = zip(*Vd)
-
     # PHASE 1
     # Create an initial path
-    max_path = []
+    path = []
     i = 0
 
     # Repeat Phase I for each of the highest degree vertex of the graph and select the longest Pi as initial path.
-    while len(max_path) != g.vertex_count() and (i == 0 or Vd[i][0] == Vd[i - 1][0]):
-        path = []
+    while len(path) != g.vertex_count() and (i == 0 or Vd[i] == Vd[i - 1]):
+        new_path = []
 
         # (1) Start from one of the highest degree vertex (first vertex in the array Vd). Let it be Vs.
-        vs = Vd[i][1]
+        vs = Vd[i]
 
         # 2) Add it to the initial path.
-        path.append(vs)
+        new_path.append(vs)
 
         # (3) Repeat until vs becomes a dead end.
-        _greedy_dfs(g, vs, path, n_va)
+        _greedy_dfs(g, vs, new_path, Va)
 
-        print('greedy_dfs', path, len(path))
+        print('greedy_dfs', new_path, len(new_path))
 
-        if len(path) > len(max_path):
-            max_path = path[:]
+        if len(new_path) > len(path):
+            path = new_path[:]
         i += 1
     # //End of Phase 1
     # (4) If |Pi| == n then go to Phase 3.
@@ -58,11 +55,26 @@ def hybridHAM(g, tour):
     # Phase 2
     # Convert the initial path into Hamiltonian path
     # (5) Repeat until |Pi| != n.
-    while len(max_path) != g.vertex_count():
-        if not _rotational_transform(g, max_path, n_va):
+    while len(path) != g.vertex_count():
+        # (a) Select the highest degree end of the path Pi for rotational transformation
+        d_front, d_back = g.degree(path[0]), g.degree(path[-1])
+
+        # (b) Reverse Pi if the first vertex in Pi is having degree higher than the last vertex to make the highest
+        # degree vertex as the end vertex of the path. Let it be vx.
+        if d_front > d_back or (d_front == d_back and random.random() > 0.5):  # Upgrade: introduced probability change
+            path.reverse()
+
+        # (c) Apply rotational transformation to Pi using c to get a new path.
+        # (d) If rotational transformation could not be applied then either the graph is not having Hamiltonian path or
+        # the algorithm fails to identify the Hamiltonian path and so exit.
+        if not _rotational_transform(g, path):
             return False
+
+        # (e) Extend this new path by using the greedy depth first search as in Phase 1
+        _greedy_dfs(g, path[-1], path, Va)
+
     # (6) Now Pi is the Hamiltonian Path Pi. Assign Ph = i.
-    print('maxed', max_path, len(max_path))
+    print('maxed', path, len(path))
 
     # Phase 3
     # Convert Hamiltonian path into Hamiltonian cycle
@@ -106,37 +118,26 @@ def _greedy_dfs(g, vs, path, va):
     return
 
 
-def _rotational_transform(g, path, va):
-    # (a) Select the highest degree end of the path Pi for rotational transformation
-    d_front, d_back = g.degree(path[0]), g.degree(path[-1])
-
-    # (b) Reverse Pi if the first vertex in Pi is having degree higher than the last vertex to make the highest degree
-    # vertex as the end vertex of the path. Let it be vx.
-    if d_front > d_back or (d_front == d_back and random.random() > 0.5):  # Upgrade: introduced probability change
-        path.reverse()
+def _rotational_transform(g, path):
+    # (1) Find a vertex adjacent to vx in the input graph, in path P. Let it be vertex b.
     vx = path[-1]
 
-    # (c) Apply rotational transformation to Pi using vx to get a new path.
-    #     (1) Find a vertex adjacent to vx in the input graph, in path P. Let it be vertex b.
-    rotated = False
-    for e in g.incident_edges(vx):
-        b = e.opposite(vx)
-        if b in path:
-            # (2) Create a new path P',
-            #     (a) by connecting b to e
-            #     (b) by reversing the path from c to e
-            i_b = path.index(b)
-            path[i_b + 1:] = path[-1:i_b:-1]
+    adj_vx = [e.opposite(vx) for e in g.incident_edges(vx)]
+    random.shuffle(adj_vx)
 
-            rotated = True
-            break
-    # (d) If rotational transformation could not be applied then either the graph is not having Hamiltonian path or the
-    # algorithm fails to identify the Hamiltonian path and so exit.
-    if not rotated:
-        return False
+    for v in adj_vx:
+        if v in path:
+            _rotate_path(path, v)
+            return True
 
-    print(path, len(path))
+    return False
 
-    # (e) Extend this new path by using the greedy depth first search as in Phase 1
-    _greedy_dfs(g, path[-1], path, va)
-    return True
+
+def _rotate_path(path, b):
+    # (2) Create a new path P',
+    #     (a) by connecting b to e
+    #     (b) by reversing the path from end to e
+    i_b = path.index(b)
+    if i_b < len(path) - 2:
+        path[i_b + 1:] = path[-1:i_b:-1]
+
