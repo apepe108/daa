@@ -48,6 +48,18 @@ def _create_graph(set_currencies):
     return g, V
 
 
+def _random_hamiltonian(g, tour):
+    """HybridHAM algorithm based. The proposed HybridHAM algorithm works in three steps:
+        (l) Create an initial path
+        (2) Convert the initial path to Hamiltonian path.
+        (3) Convert the Hamiltonian path to Hamiltonian cycle.
+
+    :param g: the graph where to look for a Hamiltonian cycle;
+    :param tour: the list in which to memorize the Hamiltonian cycle;
+    :return True if a Hamiltonian cycle where found, otherwise false."""
+    pass
+
+
 def _backtracking_random_hamiltonian(g, curr=None, hc=None, cost=0):
     """Given a graph, it returns one of the possible Hamiltonian cycles if it exists.
 
@@ -252,6 +264,9 @@ def _rotate(hc, frac=0.33):
     :return: the rotated Hamiltonian cycle."""
     n = round(len(hc) * frac)
     return hc[n:] + hc[:n]
+
+
+# ------------------------ GRAPHS FOR TESTING --------------------------------------------------------------------------
 
 
 def _populate_graph1():
@@ -650,6 +665,9 @@ def _populate_graph3():
             dkk, dop, dzd}
 
 
+# -------------- BRUTE FORCE METHODS -----------------------------------------------------------------------------------
+
+
 def _hamiltonian_brute_force(g, curr=None, hc=None, cost=0):
     """Given a graph, it returns a generator of all hamiltonian cycle."""
     if curr is None:
@@ -691,6 +709,8 @@ def excange_tour_brute_force(C):
             min_cycle, min_cost = hc
     return min_cycle, min_cost
 
+
+# --------------------- DRIVER TEST ------------------------------------------------------------------------------------
 
 if __name__ == '__main__':
     print('-------- GRAPH 1 -----------------')
