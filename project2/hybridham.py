@@ -74,7 +74,7 @@ def hybridHAM(g, tour):
     # (6) Now Pi is the Hamiltonian Path Pi. Assign Ph = i.
     print('maxed', path, len(path))
 
-    # Phase 3
+    # -----------   Phase 3   --------------------
     # Convert Hamiltonian path into Hamiltonian cycle
 
     # (8) Repeat until there is an edge connecting the first and last vertices of the path Ph.
@@ -92,6 +92,8 @@ def hybridHAM(g, tour):
         # the algorithm fails to identify the Hamiltonian path and so exit.
         if not _rotational_transform(g, path):
             return False
+
+        print('partial cycle', path)
 
     # (9) Now Ph is the Hamiltonian cycle and return Ph.
     # End of 3
