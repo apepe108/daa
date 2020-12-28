@@ -2,7 +2,7 @@ import random
 
 from TdP_collections.graphs.graph import Graph
 from project1.currency import Currency
-from project2.hybridham import hybridHAM
+from project2.excange_tour.hybridham import hybridHAM
 
 from datetime import datetime
 
@@ -21,7 +21,6 @@ def excange_tour(C):
         return None
     # print('founded first', datetime.now())  # ------------------------------------------------------------ DEBUG PRINT
 
-    cost = 0
     edited = True
     while edited:
         edited = _2_3opt(g, hc, num_cycle=len(hc) // 3)
