@@ -6,6 +6,21 @@ from project1.currency import Currency
 from datetime import datetime
 
 
+def excange_tour(C):
+    """A local search algorithm that takes in input a set of Currency objects and looks for
+    an exchange tour of minimal rate."""
+    g, V = _create_graph(C)
+
+    found, hc, cost = _backtracking_random_hamiltonian(g)
+    print('founded first', datetime.now())  # ------------------------------------------------------------ DEBUG PRINT
+
+    edited = True
+    while edited:
+        edited, hc, cost = _2_3opt(g, hc, cost, max_cnt=len(hc) // 3)
+
+    return hc, cost
+
+
 def _create_graph(set_currencies):
     """Given a set of currency, it returns a graph that represents all the exchange possibilities.
 
@@ -28,71 +43,15 @@ def _create_graph(set_currencies):
             if g.get_edge(vert, V[change]) is None:
                 g.insert_edge(vert, V[change], cur.get_change(change))
 
-    print('created', datetime.now())
+    print('created', datetime.now())  # ------------------------------------------------------------------ DEBUG PRINT
+
     return g, V
-
-
-def _hamiltonian_brute_force(g, curr=None, hc=None, cost=0):
-    """Given a graph, it returns a generator of all hamiltonian cycle."""
-    if curr is None:
-        curr = random.choice(list(g.vertices()))
-
-    # By default, the cycle is evaluated from the beginning.
-    if hc is None:
-        hc = [curr]
-
-    # Try different vertices as a next candidate in Hamiltonian Cycle
-    for e in g.incident_edges(curr):
-        o = e.opposite(curr)  # for each adjacent vertex
-        if o not in hc:
-            hc.append(o)
-
-            # base case: if all vertices are included in the path Last vertex must be adjacent to the first vertex in
-            # path to make a cycle
-            if g.vertex_count() == len(hc):
-                ce = g.get_edge(hc[0], hc[-1])
-                if ce is not None:
-                    yield hc + [hc[0]], round(cost + e.element() + ce.element(), 10)
-            else:
-                # Start recurs
-                for res in _hamiltonian_brute_force(g, o, hc, cost + e.element()):
-                    yield res
-
-            # remove the current currency and try with another
-            hc.pop()
-
-
-def excange_tour_brute_force(C):
-    """A local search algorithm that takes in input a set of Currency objects and looks for
-    an exchange tour of minimal rate."""
-    g, V = _create_graph(C)
-
-    min_cost = min_cycle = None
-    for hc in _hamiltonian_brute_force(g):
-        if min_cost is None or hc[1] < min_cost:
-            min_cycle, min_cost = hc
-    return min_cycle, min_cost
-
-
-def excange_tour(C):
-    """A local search algorithm that takes in input a set of Currency objects and looks for
-    an exchange tour of minimal rate."""
-    g, V = _create_graph(C)
-
-    found, hc, cost = _backtracking_random_hamiltonian(g)
-    print('founded first', datetime.now())
-    if not found:
-        return None
-
-    edited = True
-    while edited:
-        edited, hc, cost = _2_3opt(g, hc, cost)
-
-    return hc, cost
 
 
 def _backtracking_random_hamiltonian(g, curr=None, hc=None, cost=0):
     """Given a graph, it returns one of the possible Hamiltonian cycles if it exists.
+
+    NOTE: complexity is very high O(n-1!) "factorial".
 
     :param g: the graph where to look for a Hamiltonian cycle.
     :param hc: the hamiltonian cycle path.
@@ -131,7 +90,7 @@ def _backtracking_random_hamiltonian(g, curr=None, hc=None, cost=0):
     return False, hc, cost
 
 
-def _2_3opt(g, hc, cost):
+def _2_3opt(g, hc, cost, max_cnt=3):
     """Call the 2 opt algorithm until you get a 2opt-optimal solution, then call the 3-opt algorithm until you get an
     optimal 3-opt solution. If there are no more improvements, it re-executes on the rotated cycle and, if there are no
     improvements here, it returns the cycle found and its cost.
@@ -145,7 +104,7 @@ def _2_3opt(g, hc, cost):
     cnt = 0
     edited = False
 
-    while cnt < 2:
+    while cnt < max_cnt:
         edited, hc, cost = _2opt(g, hc, cost)
         if edited:
             cnt = 0
@@ -154,7 +113,7 @@ def _2_3opt(g, hc, cost):
             if edited:
                 cnt = 0
             else:
-                hc = _rotate(hc)
+                hc = _rotate(hc, 1 / max_cnt)
                 cnt += 1
 
     return edited, hc + [hc[0]], cost
@@ -257,21 +216,21 @@ def _3opt(g, hc, cost):
                     old_w = round(old_e1.element() + old_e2.element() + old_e3.element(), 10)
                     new_w = round(new_e1.element() + new_e2.element() + new_e3.element(), 10)
 
-                    print('\t\tsx old {}, new {}'.format(old_w, new_w))  # ------------------------------- DEBUG PRINT
+                    print('\t\t', 'i:', i, 'j:', j, 'k:', k, 'sx old {}, new {}'.format(old_w, new_w))  # -DEBUG PRINT
 
                     if old_w > new_w:
                         edited = True
                         cost = round(cost - old_w + new_w, 10)
                         hc[i + 1:k + 1] = hc[j + 1:k + 1] + hc[i + 1:j + 1]
 
-                        print('\t\t\t', 'i:', i, 'j:', j, 'k:', k, '\n\t\t\tr -> ', hc)  # --------------- DEBUG PRINT
+                        print('\n\t\t\tr -> ', hc)  # --------------- DEBUG PRINT
 
                 elif new_e4 is not None and new_e5 is not None and new_e6 is not None:
                     # ...and, in the case, if it's a better solution.
                     old_w = round(old_e1.element() + old_e2.element() + old_e3.element(), 10)
                     new_w = round(new_e4.element() + new_e5.element() + new_e6.element(), 10)
 
-                    print('\t\tdx old {}, new {}'.format(old_w, new_w))  # ------------------------------- DEBUG PRINT
+                    print('\t\t', 'i:', i, 'j:', j, 'k:', k, 'sx old {}, new {}'.format(old_w, new_w))  # -DEBUG PRINT
 
                     if old_w > new_w:
                         print('\t\t', new_e4, new_e5, new_e6)
@@ -280,18 +239,19 @@ def _3opt(g, hc, cost):
                         hc[i + 1:k + 1] = hc[j + 1:k + 1] + hc[j:i:-1]
 
                         # DEBUG PRINT
-                        print('\t\t\t', 'i:', i, 'j:', j, 'k:', k, '\n\t\t\tr -> ', hc)  # --------------- DEBUG PRINT
+                        print('\n\t\t\tr -> ', hc)  # --------------- DEBUG PRINT
 
     return edited, hc, cost
 
 
-def _rotate(hc, item=5):
+def _rotate(hc, frac=0.33):
     """rotate the solution found by 'item' nodes, leaving the solution unchanged.
 
     :param hc: the Hamiltonian cycle represented with a list of vertex;
-    :param item: the number of item to rotate;
+    :param frac: percentual of solution to rotate;
     :return: the rotated Hamiltonian cycle."""
-    return hc[item:] + hc[:item]
+    n = round(len(hc) * frac)
+    return hc[n:] + hc[:n]
 
 
 def _populate_graph1():
@@ -688,6 +648,48 @@ def _populate_graph3():
     return {aed, afn, all_, amd, ang, aoa, ars, aud, awg, azn, bam, bbd, bdt, bgn, bhd, bif, bmd, bnd, bob, bov, brl,
             bsd, btn, bwp, byn, bzd, cad, cdf, che, chf, chw, clf, clp, cny, cop, cou, crc, cuc, cup, cve, czk, djf,
             dkk, dop, dzd}
+
+
+def _hamiltonian_brute_force(g, curr=None, hc=None, cost=0):
+    """Given a graph, it returns a generator of all hamiltonian cycle."""
+    if curr is None:
+        curr = random.choice(list(g.vertices()))
+
+    # By default, the cycle is evaluated from the beginning.
+    if hc is None:
+        hc = [curr]
+
+    # Try different vertices as a next candidate in Hamiltonian Cycle
+    for e in g.incident_edges(curr):
+        o = e.opposite(curr)  # for each adjacent vertex
+        if o not in hc:
+            hc.append(o)
+
+            # base case: if all vertices are included in the path Last vertex must be adjacent to the first vertex in
+            # path to make a cycle
+            if g.vertex_count() == len(hc):
+                ce = g.get_edge(hc[0], hc[-1])
+                if ce is not None:
+                    yield hc + [hc[0]], round(cost + e.element() + ce.element(), 10)
+            else:
+                # Start recurs
+                for res in _hamiltonian_brute_force(g, o, hc, cost + e.element()):
+                    yield res
+
+            # remove the current currency and try with another
+            hc.pop()
+
+
+def excange_tour_brute_force(C):
+    """A local search algorithm that takes in input a set of Currency objects and looks for
+    an exchange tour of minimal rate."""
+    g, V = _create_graph(C)
+
+    min_cost = min_cycle = None
+    for hc in _hamiltonian_brute_force(g):
+        if min_cost is None or hc[1] < min_cost:
+            min_cycle, min_cost = hc
+    return min_cycle, min_cost
 
 
 if __name__ == '__main__':
