@@ -23,9 +23,18 @@ def excange_tour(C):
 
     edited = True
     while edited:
-        edited = _2_3opt(g, hc, num_cycle=len(hc) // 3)
+        edited = _2_3opt(g, hc, num_cycle=len(hc) + 1)
 
     return hc
+
+
+def get_cost(C, hc):
+    g, V = _create_graph(C)
+
+    cost = 0
+    for i in range(len(hc)):
+        cost += g.get_edge(V[hc[i].element().code()], V[hc[(i + 1) % len(hc)].element().code()]).element()
+    return round(cost, 10)
 
 
 def _create_graph(set_currencies):
@@ -105,8 +114,8 @@ def _2opt(g, hc):
     edited = False
 
     # for each excangable 2opt moves
-    for i in range(len(hc) - 3):
-        for j in range(i + 2, len(hc) - 1):
+    for i in range(len(hc) - 2):
+        for j in range(i + 1, len(hc) - 1):
             old_e1, old_e2 = g.get_edge(hc[i], hc[i + 1]), g.get_edge(hc[j], hc[j + 1])
             new_e1, new_e2 = g.get_edge(hc[i], hc[j]), g.get_edge(hc[i + 1], hc[j + 1])
 
@@ -153,9 +162,9 @@ def _3opt(g, hc):
     edited = False
 
     # for each excangable 3opt moves
-    for i in range(len(hc) - 5):
-        for j in range(i + 2, len(hc) - 3):
-            for k in range(j + 2, len(hc) - 1):
+    for i in range(len(hc) - 3):
+        for j in range(i + 1, len(hc) - 2):
+            for k in range(j + 1, len(hc) - 1):
                 old_e1 = g.get_edge(hc[i], hc[i + 1])
                 old_e2 = g.get_edge(hc[j], hc[j + 1])
                 old_e3 = g.get_edge(hc[k], hc[k + 1])
@@ -658,6 +667,14 @@ def excange_tour_brute_force(C):
 # --------------------- DRIVER TEST ------------------------------------------------------------------------------------
 
 if __name__ == '__main__':
+    def do_local_search(C):
+        print('\nLocal Search')
+        start_time = datetime.now()
+        tour = excange_tour(C)
+        end_time = datetime.now()
+        print('founded in {}'.format(end_time - start_time))
+        print('tour:{}\ncost:{}'.format(tour, get_cost(C, tour)))
+
     print('-------- GRAPH 1 -----------------')
     # print('\nBrute force:')
     # start_time = datetime.now()
@@ -665,11 +682,8 @@ if __name__ == '__main__':
     # end_time = datetime.now()
     # print('founded in {}'.format(end_time - start_time))
 
-    print('\nLocal Search:')
-    start_time = datetime.now()
-    print(excange_tour(_populate_graph1()))
-    end_time = datetime.now()
-    print('founded in {}'.format(end_time - start_time))
+    C1 = _populate_graph1()
+    do_local_search(C1)
 
     print('\n\n------------ GRAPH 2 -----------------')
     # print('\nBrute force:')
@@ -678,11 +692,8 @@ if __name__ == '__main__':
     # end_time = datetime.now()
     # print('founded in {}'.format(end_time - start_time))
 
-    print('\nLocal Search:')
-    start_time = datetime.now()
-    print(excange_tour(_populate_graph2()))
-    end_time = datetime.now()
-    print('founded in {}'.format(end_time - start_time))
+    C2 = _populate_graph2()
+    do_local_search(C2)
 
     print('\n\n------------ GRAPH 3 -----------------')
     # print('\nBrute force:')
@@ -691,8 +702,5 @@ if __name__ == '__main__':
     # end_time = datetime.now()
     # print('founded in {}'.format(end_time - start_time))
 
-    print('\nLocal Search')
-    start_time = datetime.now()
-    print(excange_tour(_populate_graph3()))
-    end_time = datetime.now()
-    print('founded in {}'.format(end_time - start_time))
+    C3 = _populate_graph3()
+    do_local_search(C3)
