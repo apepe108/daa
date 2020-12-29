@@ -23,7 +23,7 @@ def excange_tour(C):
 
     edited = True
     while edited:
-        edited = _2_3opt(g, hc, num_cycle=len(hc) + 1)
+        edited = _2_3opt(g, hc, num_cycle=len(hc) // 4)
 
     return hc
 
@@ -64,9 +64,6 @@ def _create_graph(set_currencies):
     return g, V
 
 
-# ---------------------------------------------------------------------------------------------------------------------
-# -------------- TRY TO REMOVE NUM CYCLE OPERATING 2-3 OPT ON DOUBLE SIZE ARRAY ---------------------------------------
-# ---------------------------------------------------------------------------------------------------------------------
 def _2_3opt(g, hc, num_cycle):
     """Call the 2 opt algorithm until you get a 2opt-optimal solution, then call the 3-opt algorithm until you get an
     optimal 3-opt solution. If there are no more improvements, it re-executes on the rotated cycle and, if there are no
@@ -114,8 +111,8 @@ def _2opt(g, hc):
     edited = False
 
     # for each excangable 2opt moves
-    for i in range(len(hc) - 2):
-        for j in range(i + 1, len(hc) - 1):
+    for i in range(len(hc) - 3):
+        for j in range(i + 2, len(hc) - 1):
             old_e1, old_e2 = g.get_edge(hc[i], hc[i + 1]), g.get_edge(hc[j], hc[j + 1])
             new_e1, new_e2 = g.get_edge(hc[i], hc[j]), g.get_edge(hc[i + 1], hc[j + 1])
 
@@ -162,9 +159,9 @@ def _3opt(g, hc):
     edited = False
 
     # for each excangable 3opt moves
-    for i in range(len(hc) - 3):
-        for j in range(i + 1, len(hc) - 2):
-            for k in range(j + 1, len(hc) - 1):
+    for i in range(len(hc) - 5):
+        for j in range(i + 2, len(hc) - 3):
+            for k in range(j + 2, len(hc) - 1):
                 old_e1 = g.get_edge(hc[i], hc[i + 1])
                 old_e2 = g.get_edge(hc[j], hc[j + 1])
                 old_e3 = g.get_edge(hc[k], hc[k + 1])
