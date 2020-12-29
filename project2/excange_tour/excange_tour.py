@@ -77,16 +77,12 @@ def _2_3opt(g, hc, num_cycle):
     edited = False
 
     while cnt < num_cycle:
-        edited = _2opt(g, hc)
+        edited = _2opt(g, hc) or _3opt(g, hc)
         if edited:
             cnt = 0
         else:
-            edited = _3opt(g, hc)
-            if edited:
-                cnt = 0
-            else:
-                _rotate(hc, 1 / num_cycle)
-                cnt += 1
+            _rotate(hc, 1 / num_cycle)
+            cnt += 1
 
     return edited
 
@@ -671,6 +667,7 @@ if __name__ == '__main__':
         end_time = datetime.now()
         print('founded in {}'.format(end_time - start_time))
         print('tour:{}\ncost:{}'.format(tour, get_cost(C, tour)))
+
 
     print('-------- GRAPH 1 -----------------')
     # print('\nBrute force:')
