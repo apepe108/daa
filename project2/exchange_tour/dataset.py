@@ -1,223 +1,7 @@
-import random
-import math
-
-from TdP_collections.graphs.graph import Graph
 from project1.currency import Currency
-from project2.excange_tour.hybridham import hybridHAM
-
-from datetime import datetime
 
 
-def excange_tour(C):
-    """A local search algorithm that takes in input a set of Currency objects and looks for
-    an exchange tour of minimal rate.
-
-    :param C: a set of Currency objects.
-    :return list representing the computed Hamiltonian cycle or None if the set made a non Hamiltonian graph."""
-    g, V = _create_graph(C)
-
-    hc = []
-    found = hybridHAM(g, hc)
-    if not found:
-        return None
-    # print('founded first', datetime.now())  # ------------------------------------------------------------ DEBUG PRINT
-
-    edited = True
-    while edited:
-        edited = _2_3opt(g, hc, num_cycle=math.log2(g.vertex_count()))
-
-    return hc
-
-
-def get_cost(C, hc):
-    g, V = _create_graph(C)
-
-    cost = 0
-    for i in range(len(hc)):
-        cost += g.get_edge(V[hc[i].element().code()], V[hc[(i + 1) % len(hc)].element().code()]).element()
-    return round(cost, 10)
-
-
-def _create_graph(set_currencies):
-    """Given a set of currency, it returns a graph that represents all the exchange possibilities.
-
-    :param set_currencies: a set of Currency objects such that, for every Object c in the set, the attribute Change
-    contains the rate exchange of c against every Other currency in the set different from c;
-    :returns: a graph representing all the exchange way;
-    :returns: a map containing the vertex associated at them currency code."""
-    # instantiate direct graph
-    g = Graph()
-    V = {}  # store V[currencycode] = vertex(currency)
-
-    # add all vertices
-    for cur in set_currencies:
-        V[cur.code()] = g.insert_vertex(cur)
-
-    # for each vertex add edge corresponding to exchange rate
-    for vert in g.vertices():
-        cur = vert.element()
-        for change in cur.iter_changes():
-            if g.get_edge(vert, V[change]) is None:
-                g.insert_edge(vert, V[change], cur.get_change(change))
-
-    # print('created', datetime.now())  # ------------------------------------------------------------------ DEBUG PRINT
-
-    return g, V
-
-
-def _2_3opt(g, hc, num_cycle):
-    """Call the 2 opt algorithm until you get a 2opt-optimal solution, then call the 3-opt algorithm until you get an
-    optimal 3-opt solution. If there are no more improvements, it re-executes on the rotated cycle and, if there are no
-    improvements here, it returns the cycle found and its cost.
-
-    :param g: the graph on which to search for the minimum Hamiltonian cycle;
-    :param hc: list containing a starting Hamiltonian cycle that will be replaced with an improved cycle, if reduced.
-    :returns: a boolean indicating whether the algorithm has found a better solution."""
-
-    cnt = 0
-    edited = False
-
-    while cnt < 1:
-        edited = _2opt(g, hc) or _3opt(g, hc)
-        if edited:
-            cnt = 0
-        else:
-            _rotate(hc, 1 / num_cycle)
-            cnt += 1
-
-    return edited
-
-
-def _2opt(g, hc):
-    """The idea is the following:
-    1) disconnect hc[i] - hc[i+1] and hc[j] - hc[j+1];
-    2) try to reconnect hc[i] - hc[j] and hc[i+1] - hc[j+1], if it's possible and if the solution is better.
-
-    A graphical representation is as follows:
-
-        1..  hc[i]       hc[j]                  1..  hc[i]   -    hc[j]
-                     x     |         ---->                          |
-        2.. hc[j+1]     hc[i+1]                 2.. hc[j+1]  -   hc[i+1]
-
-    :param g: the graph on which to search for the minimum Hamiltonian cycle;
-    :param hc: list containing a starting Hamiltonian cycle that will be replaced with an improved cycle, if reduced.
-    :returns: a boolean indicating whether the algorithm has found a better solution."""
-
-    # print('\tstart 2opt:   ', hc)  # --------------------------------------------------------------------- DEBUG PRINT
-
-    edited = False
-
-    # for each excangable 2opt moves
-    for i in range(len(hc) - 3):
-        for j in range(i + 2, len(hc) - 1):
-            old_e1, old_e2 = g.get_edge(hc[i], hc[i + 1]), g.get_edge(hc[j], hc[j + 1])
-            new_e1, new_e2 = g.get_edge(hc[i], hc[j]), g.get_edge(hc[i + 1], hc[j + 1])
-
-            # verify existance of edge ...
-            # old edges exists!
-            if new_e1 is not None and new_e2 is not None:
-                # ...and, in the case, if it's a better solution.
-                old_w = round(old_e1.element() + old_e2.element(), 10)
-                new_w = round(new_e1.element() + new_e2.element(), 10)
-
-                # print('\t\told {}, new {}'.format(old_w, new_w))  # -------------------------------------- DEBUG PRINT
-
-                if old_w > new_w:
-                    edited = True
-                    hc[i + 1:j + 1] = hc[j:i:-1]
-
-                    # print('\t\t\t', 'i:', i, 'j:', j, '\n\t\t\tr -> ', hc)  # ---------------------------- DEBUG PRINT
-
-    return edited
-
-
-def _3opt(g, hc):
-    """The idea is the following:
-    We do not want to use the 3 opt in its totality as a complexity O(n^3) would not be very acceptable, therefore,
-    considering to run it only after the 2opt termination, we only take into account the 3opt cases, and in the case of
-    large sequences for a limited length.
-
-        1..  _   hc[i]      hc[j]       hc[k]                   1..  -   hc[i]       hc[j]       hc[k] _
-                  |     /     |     /     |              -->                     \     |     \     |    \
-               hc[i+1]     hc[j+1]     hc[k+1]  - ..2           2..  -  hc[i+1]     hc[j+1]     hc[k+1]  \
-                                                                           \______________________________\
-
-        1..  _   hc[i]      hc[j]       hc[k]                   1..  -   hc[i]       hc[j]   -   hc[k]
-                  |     /     |     /     |              -->                     x           /
-               hc[i+1]     hc[j+1]     hc[k+1]  - ..2                   hc[i+1]     hc[j+1]     hc[k+1]  - ..2
-                                                                           \_______________________|
-
-    :param g: g: the graph on which to search for the minimum Hamiltonian cycle;
-    :param hc: list containing a starting Hamiltonian cycle that will be replaced with an improved cycle, if reduced.
-    :returns: a boolean indicating whether the algorithm has found a better solution."""
-
-    # print('\tstart 3opt:   ', hc)  # --------------------------------------------------------------------- DEBUG PRINT
-
-    edited = False
-
-    # for each excangable 3opt moves
-    for i in range(len(hc) - 5):
-        for j in range(i + 2, len(hc) - 3):
-            for k in range(j + 2, len(hc) - 1):
-                old_e1 = g.get_edge(hc[i], hc[i + 1])
-                old_e2 = g.get_edge(hc[j], hc[j + 1])
-                old_e3 = g.get_edge(hc[k], hc[k + 1])
-
-                # first case
-                new_e1 = g.get_edge(hc[i], hc[j + 1])
-                new_e2 = g.get_edge(hc[j], hc[k + 1])
-                new_e3 = g.get_edge(hc[k], hc[i + 1])
-
-                # second case
-                new_e4 = g.get_edge(hc[i], hc[j + 1])
-                new_e5 = g.get_edge(hc[j], hc[k])
-                new_e6 = g.get_edge(hc[i + 1], hc[k + 1])
-
-                # verify existance of edge ...
-                # old edges exists!
-                if new_e1 is not None and new_e2 is not None and new_e3 is not None:
-                    # ...and, in the case, if it's a better solution.
-                    old_w = round(old_e1.element() + old_e2.element() + old_e3.element(), 10)
-                    new_w = round(new_e1.element() + new_e2.element() + new_e3.element(), 10)
-
-                    # print('\t\t', 'i:', i, 'j:', j, 'k:', k, 'sx old {}, new {}'.format(old_w, new_w))  # -DEBUG PRINT
-
-                    if old_w > new_w:
-                        edited = True
-                        hc[i + 1:k + 1] = hc[j + 1:k + 1] + hc[i + 1:j + 1]
-
-                        # print('\n\t\t\tr -> ', hc)  # ---------------------------------------------------- DEBUG PRINT
-
-                elif new_e4 is not None and new_e5 is not None and new_e6 is not None:
-                    # ...and, in the case, if it's a better solution.
-                    old_w = round(old_e1.element() + old_e2.element() + old_e3.element(), 10)
-                    new_w = round(new_e4.element() + new_e5.element() + new_e6.element(), 10)
-
-                    # print('\t\t', 'i:', i, 'j:', j, 'k:', k, 'sx old {}, new {}'.format(old_w, new_w))  # -DEBUG PRINT
-
-                    if old_w > new_w:
-                        edited = True
-                        hc[i + 1:k + 1] = hc[j + 1:k + 1] + hc[j:i:-1]
-
-                        # print('\n\t\t\tr -> ', hc)  # ---------------------------------------------------- DEBUG PRINT
-
-    return edited
-
-
-def _rotate(hc, frac=0.33):
-    """rotate the solution found by 'item' nodes, leaving the solution unchanged.
-
-    :param hc: the list representing a Hamiltonian cycle that will be rotated;
-    :param frac: percentage of solution to rotate;
-    :return: the rotated Hamiltonian cycle."""
-    n = round(len(hc) * frac)
-    hc[:] = hc[n:] + hc[:n]
-
-
-# ------------------------ GRAPHS FOR TESTING --------------------------------------------------------------------------
-
-
-def _populate_graph1():
+def graph_5n():
     usd = Currency('USD')
     usd.add_change('GBP', 0.09)
     usd.add_change('EUR', 0.3)
@@ -245,7 +29,7 @@ def _populate_graph1():
     return {usd, gbp, eur, cny, jpy}
 
 
-def _populate_graph2():
+def graph_14n():
     gbp = Currency('GBP')
     gbp.add_change('BDT', 0.66)
     gbp.add_change('AED', 0.2)
@@ -331,7 +115,7 @@ def _populate_graph2():
     return {gbp, cny, eur, ils, dop, aed, usd, jod, lab, etb, gip, cad, bdt, jpy}
 
 
-def _populate_graph3():
+def graph_45n():
     aed = Currency('AED')
     aed.add_change('AFN', 0.10)
     aed.add_change('ALL', 0.20)
@@ -613,7 +397,7 @@ def _populate_graph3():
             dkk, dop, dzd}
 
 
-def _populate_graph4():
+def graph_100n():
     aed = Currency('AED')
     aed.add_change('AFN', 0.10)
     aed.add_change('ALL', 0.20)
@@ -1135,6 +919,7 @@ def _populate_graph4():
     kgs.add_change('KWD', 0.99)
     kgs.add_change('HTG', 0.06)
     kgs.add_change('HRK', 0.14)
+    kgs.add_change('KYD', 0.4)
 
     khr = Currency('KHR')
     khr.add_change('KMF', 0.67)
@@ -1164,6 +949,7 @@ def _populate_graph4():
     krw.add_change('KWD', 0.12)
     krw.add_change('HRK', 0.51)
     krw.add_change('KGS', 0.29)
+    krw.add_change('KYD', 0.96)
 
     kwd = Currency('KWD')
     kwd.add_change('KRW', 0.12)
@@ -1329,101 +1115,3 @@ def _populate_graph4():
             dkk, dop, dzd, egp, ern, etb, fjd, fkp, gel, ghs, gip, gmd, gnf, gtq, gyd, hkd, hnl, hrk, htg, huf, idr,
             ils, inr, iqd, irr, isk, jmd, jod, jpy, kes, kgs, khr, kmf, kpw, krw, kwd, kyd, kzt, lak, lbp, lkr, lrd,
             lsl, lyd, mad, mdl, mga, mkd, mmk, mnt, mop, mru, mur, mvr, mwk, mxn, mxv, myr}
-
-
-# -------------- BRUTE FORCE METHODS -----------------------------------------------------------------------------------
-
-
-def _hamiltonian_brute_force(g, curr=None, hc=None, cost=0):
-    """Given a graph, it returns a generator of all hamiltonian cycle."""
-    if curr is None:
-        curr = random.choice(list(g.vertices()))
-
-    # By default, the cycle is evaluated from the beginning.
-    if hc is None:
-        hc = [curr]
-
-    # Try different vertices as a next candidate in Hamiltonian Cycle
-    for e in g.incident_edges(curr):
-        o = e.opposite(curr)  # for each adjacent vertex
-        if o not in hc:
-            hc.append(o)
-
-            # base case: if all vertices are included in the path Last vertex must be adjacent to the first vertex in
-            # path to make a cycle
-            if g.vertex_count() == len(hc):
-                ce = g.get_edge(hc[0], hc[-1])
-                if ce is not None:
-                    yield hc + [hc[0]], round(cost + e.element() + ce.element(), 10)
-            else:
-                # Start recurs
-                for res in _hamiltonian_brute_force(g, o, hc, cost + e.element()):
-                    yield res
-
-            # remove the current currency and try with another
-            hc.pop()
-
-
-def excange_tour_brute_force(C):
-    """A local search algorithm that takes in input a set of Currency objects and looks for
-    an exchange tour of minimal rate."""
-    g, V = _create_graph(C)
-
-    min_cost = min_cycle = None
-    for hc in _hamiltonian_brute_force(g):
-        if min_cost is None or hc[1] < min_cost:
-            min_cycle, min_cost = hc
-    return min_cycle, min_cost
-
-
-# --------------------- DRIVER TEST ------------------------------------------------------------------------------------
-
-if __name__ == '__main__':
-    def do_local_search(C):
-        print('\nLocal Search')
-        start_time = datetime.now()
-        tour = excange_tour(C)
-        end_time = datetime.now()
-        print('founded in {}'.format(end_time - start_time))
-        print('tour:{}\ncost:{}'.format(tour, get_cost(C, tour)))
-
-
-    print('-------- GRAPH 1 -----------------')
-    # print('\nBrute force:')
-    # start_time = datetime.now()
-    # print(excange_tour_brute_force(_populate_graph1()))
-    # end_time = datetime.now()
-    # print('founded in {}'.format(end_time - start_time))
-
-    C1 = _populate_graph1()
-    do_local_search(C1)
-
-    print('\n\n------------ GRAPH 2 -----------------')
-    # print('\nBrute force:')
-    # start_time = datetime.now()
-    # print(excange_tour_brute_force(_populate_graph2()))
-    # end_time = datetime.now()
-    # print('founded in {}'.format(end_time - start_time))
-
-    C2 = _populate_graph2()
-    do_local_search(C2)
-
-    print('\n\n------------ GRAPH 3 -----------------')
-    # print('\nBrute force:')
-    # start_time = datetime.now()
-    # print(excange_tour_brute_force(_populate_graph3()))
-    # end_time = datetime.now()
-    # print('founded in {}'.format(end_time - start_time))
-
-    C3 = _populate_graph3()
-    do_local_search(C3)
-
-    print('\n\n------------ GRAPH 4 -----------------')
-    # print('\nBrute force:')
-    # start_time = datetime.now()
-    # print(excange_tour_brute_force(_populate_graph3()))
-    # end_time = datetime.now()
-    # print('founded in {}'.format(end_time - start_time))
-
-    C4 = _populate_graph4()
-    do_local_search(C4)

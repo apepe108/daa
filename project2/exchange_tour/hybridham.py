@@ -1,4 +1,5 @@
 import random
+import os
 
 
 def hybridHAM(g, path):
@@ -10,6 +11,7 @@ def hybridHAM(g, path):
     :param g: the graph where to look for a Hamiltonian cycle;
     :param path: a list in which to save the path;
     :return True if a Hamiltonian cycle where found, otherwise false."""
+    random.seed(os.urandom(g.vertex_count()))
 
     # From the input graph, create two arrays Va and Vd of vertices sorted in the increasing and decreasing
     # order of their degrees, respectively.
@@ -74,6 +76,12 @@ def hybridHAM(g, path):
     # Convert Hamiltonian path into Hamiltonian cycle
 
     # (8) Repeat until there is an edge connecting the first and last vertices of the path Ph.
+
+    # Due to an infinite loop for some reason of algorithm failure, we have to save the last two paths and check if in
+    # three rotations we return to the starting situation
+    last = []
+    time_failure = 0
+
     while g.get_edge(path[0], path[-1]) is None:
         # (a) Select the smallest degree end of the path Ph for rotational transformation
         d_front, d_back = g.degree(path[0]), g.degree(path[-1])
@@ -88,6 +96,12 @@ def hybridHAM(g, path):
         # the algorithm fails to identify the Hamiltonian path and so exit.
         if not _rotational_transform(g, path):
             return False
+
+        time_failure += 1
+        if time_failure > len(path) * 50:
+            last.append(path)
+            if path in last:
+                return False
 
     # (9) Now Ph is the Hamiltonian cycle and return Ph.
     # print('hamiltonian_cycle:', path)  # ----------------------------------------------------------------- DEBUG PRINT
@@ -112,19 +126,15 @@ def _greedy_dfs(g, vs, path, va):
         if edge is not None:
             if v not in path:
                 # if not _unreachable_vertex(g, path, v):
+                #     Unreachable Vertex Heuristic NOT IMPLEMENTED!
+                #     We agreed that, although this heuristic avoids the creation of dead ends, the performance
+                #     decreases a lot compared to recovering them through step 2 (rotational transform).
                 vi = v
                 break
 
     if vi is not None:
         path.append(vi)
         _greedy_dfs(g, vi, path, va)
-
-
-def _unreachable_vertex(g, path, v):
-    """Unreachable Vertex Heuristic NOT IMPLEMENTED!
-    We agreed that, although this heuristic avoids the creation of dead ends, the performance decreases a
-    lot compared to recovering them through step 2 (rotational transform)."""
-    pass
 
 
 def _rotational_transform(g, path):
@@ -141,8 +151,8 @@ def _rotational_transform(g, path):
 
     for v in adj_vx:
         if v in path:
-            _rotate_path(path, v)
-            return True
+            if _rotate_path(path, v):
+                return True
 
     return False
 
@@ -157,3 +167,6 @@ def _rotate_path(path, b):
     i_b = path.index(b)
     if i_b < len(path) - 2:
         path[i_b + 1:] = path[-1:i_b:-1]
+        return True
+
+    return False
