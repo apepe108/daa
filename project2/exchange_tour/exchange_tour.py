@@ -85,15 +85,15 @@ if __name__ == '__main__':
         print('tour:{}\ncost:{}'.format(tour, get_cost(tour) if tour is not None else 0))
 
 
-    print('-------- GRAPH 5n -----------------')
+    print('\n\n------------ GRAPH 5n   -----------------')
     C1 = dataset.graph_5n()
     do_local_search(C1)
 
-    print('\n\n------------ GRAPH 14n -----------------')
+    print('\n\n------------ GRAPH 14n  -----------------')
     C2 = dataset.graph_14n()
     do_local_search(C2)
 
-    print('\n\n------------ GRAPH 45n -----------------')
+    print('\n\n------------ GRAPH 45n  -----------------')
     C3 = dataset.graph_45n()
     do_local_search(C3)
 
