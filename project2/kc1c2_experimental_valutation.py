@@ -74,6 +74,8 @@ def montecarlo_on_k(L, c1, c2, k1, k2, n_try):
 
         for j in range(n_try):
             # generate random tree
+            if j % (n_try // 100) == 0:
+                print('.', end='')
             t = ABTreeMap(2, 8)
             random.shuffle(L)
             for cur_code in L:
@@ -100,6 +102,8 @@ def montecarlo_on_k(L, c1, c2, k1, k2, n_try):
 
         e_res.append((e_min, e_max, e_avg))
         o_res.append((o_min, o_max, o_avg))
+
+        print()
 
     e_min, e_max, e_avg = zip(*e_res)
     o_min, o_max, o_avg = zip(*o_res)
