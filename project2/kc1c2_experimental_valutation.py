@@ -149,7 +149,7 @@ def _plot_result(e_min, e_max, e_avg, o_min, o_max, o_avg, e_bound, k1, k2):
     # Place a legend above this subplot, expanding itself to fully use the given bounding box.
     plt.legend(fontsize=7)
 
-    plt.savefig('exp.png')
+    plt.savefig('diagram.png')
 
 
 if __name__ == '__main__':
