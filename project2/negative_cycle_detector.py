@@ -155,7 +155,7 @@ if __name__ == '__main__':
     for _ in range(iteration):
         print(arbitrage_opportunity({eur, usd, gbp}, gbp))
 
-    print('\n\n---------- GRAPH 1 - STARTING FROM GBP ----------------')
+    print('\n\n---------- GRAPH 1 - STARTING FROM USD ----------------')
     for _ in range(iteration):
         print(arbitrage_opportunity({eur, usd, gbp}, usd))
 
@@ -226,6 +226,6 @@ if __name__ == '__main__':
     for _ in range(iteration):
         print(arbitrage_opportunity({eur, usd, gbp}, gbp))
 
-    print('\n\n---------- GRAPH 3 - STARTING FROM GBP ----------------')
+    print('\n\n---------- GRAPH 3 - STARTING FROM USD ----------------')
     for _ in range(iteration):
         print(arbitrage_opportunity({eur, usd, gbp}, usd))

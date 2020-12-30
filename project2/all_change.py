@@ -236,8 +236,8 @@ def print_result(c, result, only_cent=True):
 
 if __name__ == '__main__':
     c = Currency('EUR')
-    c.add_denomination(0.01)
-    c.add_denomination(0.02)
+    # c.add_denomination(0.01)
+    # c.add_denomination(0.02)
     c.add_denomination(0.05)
     c.add_denomination(0.1)
     c.add_denomination(0.2)
@@ -249,11 +249,11 @@ if __name__ == '__main__':
     c.add_denomination(20)
     c.add_denomination(50)
 
-    value = 2
+    value = 4.55
 
     cent = Currency('CEN')
-    cent.add_denomination(1)
-    cent.add_denomination(2)
+    # cent.add_denomination(1)
+    # cent.add_denomination(2)
     cent.add_denomination(5)
     cent.add_denomination(10)
     cent.add_denomination(20)
@@ -285,3 +285,5 @@ if __name__ == '__main__':
         print_result(cent, all_change_bottom_up(cent, _float2int(value)))
 
         sys.stdout = original_stdout  # Reset the standard output to its original value
+
+    print('Algorithm terminated: output is in output_all_change.txt.')
