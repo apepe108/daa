@@ -63,6 +63,7 @@ def _by_key(e):
 
 
 def montecarlo_on_k(L, c1, c2, k1, k2, n_try):
+    """Monte Carlo simulation to evaluate the performance of the greedy algorithm compared to the optimal one."""
     e_res = []
     o_res = []
 
@@ -108,7 +109,6 @@ def montecarlo_on_k(L, c1, c2, k1, k2, n_try):
     e_min, e_max, e_avg = zip(*e_res)
     o_min, o_max, o_avg = zip(*o_res)
     e_bound = [e / o for e, o in zip(*(e_max, o_max))]
-    print(e_bound)
 
     _plot_result(e_min, e_max, e_avg, o_min, o_max, o_avg, e_bound, k1, k2 + 1)
 
